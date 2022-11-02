@@ -71,26 +71,31 @@ void Gameboy::fetch_instruction() {
 }
 
 // --SECTION-- ARITHMETIC
-// template <typename T>
-// void Gameboy::INC(Operand<T> dst) {
-//     byte one = 1;
-//     if (!(dst.type & OP_16)) {
-//         registers.set_flags("z0h-", dst, Operand<byte>(0, &one));
-//     }
-//     *dst.ptr++;
-// }
-// template void Gameboy::INC<byte>(Operand<byte> dst);
-// template void Gameboy::INC<word>(Operand<word> dst);
+void Gameboy::ADC(byte *src) {
+    //?
+}
+
+void Gameboy::ADD(byte *src) {
+
+}
+void Gameboy::ADD(word *src) {
+
+}
+void Gameboy::ADD(sbyte *src) {
+
+}
 
 
-// void Gameboy::SUB(Operand<byte> dst) {
-// 
-// }
 
-// void Gameboy::XOR(Operand<byte> src) { // dst = a 
-//     *registers.a ^= *src.ptr;
-//     registers.set_flags<byte, byte>("z000", src, src);
-// }
+
+
+void Gameboy::INC(byte *dst) {
+    (*dst)++;
+}
+void Gameboy::INC(word *dst) {
+    (*dst)++;
+}
+
 
 // --SECTION-- BIT OPS
 

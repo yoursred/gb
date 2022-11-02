@@ -11,6 +11,7 @@
 #define CC_NC 0x8
 
 typedef unsigned char byte;
+typedef signed char sbyte;
 typedef unsigned short word;
 
 #define NB (byte*) malloc(sizeof(byte))

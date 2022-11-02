@@ -53,8 +53,18 @@ class Gameboy {
     private:
     
     // --SECTION-- ARITHMETIC
-    void INC(byte *dst);
-    void INC(word *dst);
+    void ADC(byte *src);
+    void ADD(byte *src); void ADD(word *src); void ADD(sbyte *src);
+    void AND(byte *src);
+    void CP (byte *src);
+    void DEC(byte *dst); void DEC(byte *dst);
+    void INC(byte *dst); void INC(word *dst);
+    void OR (byte *src);
+    void SBC(byte *src);
+    void SUB(byte *src);
+    void XOR(byte *src);
+
+
     // void SUB(Operand<byte> dst);
     // void XOR(Operand<byte> dst);
 
