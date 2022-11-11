@@ -5,7 +5,6 @@
 #include "insset.h"
 
 
-
 Gameboy::GbRegisters::GbRegisters(void) {
     af = NW; bc = NW; de = NW;
     hl = NW; sp = NW; pc = NW;
@@ -14,6 +13,7 @@ Gameboy::GbRegisters::GbRegisters(void) {
     c = (byte*) bc; b = c + 1;
     e = (byte*) de; d = e + 1;
     l = (byte*) hl; h = l + 1;
+    // Gameboy::mem;
 }
 
 void Gameboy::GbRegisters::print_regs(void) {
@@ -32,6 +32,15 @@ void Gameboy::GbRegisters::set_flag(byte flag) {
 
 void Gameboy::GbRegisters::unset_flag(byte flag) {
     *f &= ~(flag);
+}
+
+void Gameboy::GbRegisters::update_flag(byte flag, word value) {
+    if (value) {
+        *f |= flag;
+    }
+    else {
+        *f &= ~(flag);
+    }
 }
 
 void Gameboy::GbRegisters::flip_flag(byte flag) {
@@ -57,77 +66,51 @@ int Gameboy::GbRegisters::get_cc(byte cc) {
     }
 }
 
+void Gameboy::GbRegisters::set_flags(const char *flagstr, const byte *a, const byte *b, const byte result) {
+    for (int i = 0; flagstr[i] != 0 && i < 4; i++){
+        switch(flagstr[i]) {
+            case '0': unset_flag(0x10 << (3 - i)); break;
+            case '1': set_flag(0x10 << (3 - i)); break;
+            case 'z': update_flag(FLAG_Z, result); break;
+            case 'n': set_flag(FLAG_N); break;
+            case 'h': update_flag(FLAG_H, ((*a & 0xf) + (*b & 0xf)) & 0x10); break;
+            case 'c': update_flag(FLAG_C, (int)(*a + *b) & 0x100); break;
+        }
+    }
+}
+
 
 
 Gameboy::Gameboy() {
-    // Gameboy::registers = GbRegisters();
-    GbRegisters();
+    Gameboy::registers = Gameboy::GbRegisters();
+    // Gameboy::registers.mem = 
+
+    // GbRegisters();
 }
 
-void Gameboy::fetch_instruction() {
+byte Gameboy::fetch_instruction() {
     Gameboy::opcode = mem[*registers.pc];
     byte length = get_length(Gameboy::opcode);
-    printf("opc=0x%02x, length=%d\n", Gameboy::opcode, length);
+    printf("opc=0x%02X, length=%d\n", Gameboy::opcode, length);
+    switch (length) { // maybe we don't really need this?
+        case 3:
+            working_word = mem[*registers.pc + 1];
+            working_word = (word) mem[*registers.pc + 2] << 8;
+            break;
+        case 2:
+            working_byte = mem[*registers.pc + 1];
+            break;
+    }
+    printf("wb = 0x%02X, ww = 0x%04X\n", working_byte, working_word);
+    return length;
 }
 
-// --SECTION-- ARITHMETIC
-void Gameboy::ADC(byte *src) {
-    //?
+void Gameboy::step() {
+    Gameboy::new_pc += Gameboy::fetch_instruction();
+    switch (Gameboy::opcode) {
+        case (0x03): Gameboy::INC(registers.bc);break;
+        case (0x13):break;
+        case (0x23):break;
+        case (0x43):break;
+    }
 }
-
-void Gameboy::ADD(byte *src) {
-
-}
-void Gameboy::ADD(word *src) {
-
-}
-void Gameboy::ADD(sbyte *src) {
-
-}
-
-
-
-
-
-void Gameboy::INC(byte *dst) {
-    (*dst)++;
-}
-void Gameboy::INC(word *dst) {
-    (*dst)++;
-}
-
-
-// --SECTION-- BIT OPS
-
-// --SECTION-- BIT SHIFTS
-
-// --SECTION-- LOAD
-// template <typename T, typename U>
-// void LD(Operand<T> dst, Operand<U> src) {
-//     // if (dst.type & OP_PTR) {
-//     //     // This is to cover memory indexed operands ([a16] and [$FF00 + a8/r8])
-//     //     dst.ptr = &mem[!(dst.type & OP_16) * 0xFF00 + *dst.ptr];
-//     // }
-//     // if (src.type & OP_PTR) {
-//     //     src.ptr = &mem[!(src.type & OP_16) * 0xFF00 + *src.ptr];
-//     // }
-//     *dst.ptr = *src.ptr;
-// }
-
-
-// --SECTION-- JUMPS
-// void JR(Operand<byte> offset) {
-//     new_pc = *offset.ptr;
-// }
-
-// byte JRC(byte cc, Operand<byte> offset) {
-//     if (registers.get_cc(cc)) {
-//         new_pc = *offset.ptr;
-//         return 12;
-//     }
-//     return 8;
-// }
-
-// --SECTION-- STACK
-
-// --SECTION-- MISC
