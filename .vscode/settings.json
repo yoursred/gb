@@ -77,6 +77,14 @@
         "*.tcc": "c",
         "memory_resource": "c",
         "stop_token": "c",
-        "cinttypes": "c"
-    }
+        "cinttypes": "c",
+        "fstream": "cpp"
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/yoursred/Documents/Projects/gb/build",
+            "binaryPath": "/home/yoursred/Documents/Projects/gb/build/gb",
+            "binaryArgs": []
+        }
+    ]
 }

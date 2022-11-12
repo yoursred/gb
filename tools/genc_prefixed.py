@@ -16,10 +16,10 @@ with open('opcodes.json', 'rb') as fp:
 arr = ''
 
 for i in range(256):
-    arr += template(opcodes['unprefixed'].get('0x{:02x}'.format(i)))
+    arr += template(opcodes['cbprefixed'].get('0x{:02x}'.format(i)))
     if i != 255:
         arr += ', '
         if ((i + 1) % 8) == 0:
             arr += '\n'
 
-print('byte opcodes[][3] = {\n' + arr + '\n};')
+print('byte cbprefixed[][3] = {\n' + arr + '\n};')

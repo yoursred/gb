@@ -17,7 +17,7 @@ Gameboy::GbRegisters::GbRegisters(void) {
 }
 
 void Gameboy::GbRegisters::print_regs(void) {
-    printf("AF=%04x BC=%04x DE=%04x\nHL=%04x SP=%04x PC=%04x\n",
+    printf("AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x PC=%04x\n",
         *af, *bc, *de, *hl, *sp, *pc);
 }
 
@@ -66,15 +66,11 @@ int Gameboy::GbRegisters::get_cc(byte cc) {
     }
 }
 
-void Gameboy::GbRegisters::set_flags(const char *flagstr, const byte *a, const byte *b, const byte result) {
+void Gameboy::GbRegisters::set_flags(const char *flagstr) {
     for (int i = 0; flagstr[i] != 0 && i < 4; i++){
         switch(flagstr[i]) {
             case '0': unset_flag(0x10 << (3 - i)); break;
             case '1': set_flag(0x10 << (3 - i)); break;
-            case 'z': update_flag(FLAG_Z, result); break;
-            case 'n': set_flag(FLAG_N); break;
-            case 'h': update_flag(FLAG_H, ((*a & 0xf) + (*b & 0xf)) & 0x10); break;
-            case 'c': update_flag(FLAG_C, (int)(*a + *b) & 0x100); break;
         }
     }
 }
@@ -82,35 +78,52 @@ void Gameboy::GbRegisters::set_flags(const char *flagstr, const byte *a, const b
 
 
 Gameboy::Gameboy() {
-    Gameboy::registers = Gameboy::GbRegisters();
+    Gameboy::R = Gameboy::GbRegisters();
+    instructions = 0;
     // Gameboy::registers.mem = 
 
     // GbRegisters();
 }
 
-byte Gameboy::fetch_instruction() {
-    Gameboy::opcode = mem[*registers.pc];
-    byte length = get_length(Gameboy::opcode);
-    printf("opc=0x%02X, length=%d\n", Gameboy::opcode, length);
-    switch (length) { // maybe we don't really need this?
-        case 3:
-            working_word = mem[*registers.pc + 1];
-            working_word = (word) mem[*registers.pc + 2] << 8;
-            break;
-        case 2:
-            working_byte = mem[*registers.pc + 1];
-            break;
-    }
-    printf("wb = 0x%02X, ww = 0x%04X\n", working_byte, working_word);
-    return length;
+byte* Gameboy::mem_at(word* address) {
+    return &mem[*address];
 }
 
-void Gameboy::step() {
-    Gameboy::new_pc += Gameboy::fetch_instruction();
-    switch (Gameboy::opcode) {
-        case (0x03): Gameboy::INC(registers.bc);break;
-        case (0x13):break;
-        case (0x23):break;
-        case (0x43):break;
+byte* Gameboy::mem_at(word address) {
+    return &mem[address];
+}
+
+byte Gameboy::fetch_instruction() {
+    Gameboy::opcode = mem[*R.pc];
+    byte length;
+    if (opcode != 0xCB){
+        length = get_length(Gameboy::opcode);
+        Gameboy::current_cycles = get_cycles(Gameboy::opcode);
+    } else {
+        length = get_length_prefixed(Gameboy::opcode); // Wholly redundant, it's always =2
+        Gameboy::current_cycles = get_cycles_prefixed(Gameboy::opcode);
     }
+    // printf("opc=0x%02X, length=%d\n", Gameboy::opcode, length);
+    switch (length) { // maybe we don't really need this?
+        case 3:
+            working_word = mem[*R.pc + 1];
+            working_word |= (word) mem[*R.pc + 2] << 8;
+            break;
+        case 2:
+            working_byte = mem[*R.pc + 1];
+            break;
+    }
+    // printf("wb = 0x%02X, ww = 0x%04X\n", working_byte, working_word);
+    return length;
+}
+void Gameboy::step() {
+    new_pc += fetch_instruction();
+    switch (opcode) {
+        case (0x00): break;
+        case (0xCB): decode_prefixed(); break;
+        default: decode();
+    }
+    instructions  += 1;
+    cycles += current_cycles;
+    *R.pc = new_pc;
 }
