@@ -1,5 +1,5 @@
-- [ ] Instruction fetching from opcode
-- [ ] 0xCB prefixed instruction fetching
-- [ ] Cycle counting
-- [ ] Explore C++'s reference feature
+- [x] Instruction fetching from opcode
+- [x] 0xCB prefixed instruction fetching
+- [x] Cycle counting
 - [ ] Graphics
+- [ ] Explore C++'s reference feature

@@ -10,7 +10,7 @@ void Gameboy::decode() {
         case (0x05): Gameboy::DEC(R.b);break;
         case (0x06): Gameboy::LD(R.b, &working_byte);break;
         case (0x07): Gameboy::RLC(R.a);break;
-        // case (0x08): Gameboy::LD(mem_at(working_word), R.sp);break;// TODO
+        case (0x08): Gameboy::LD16SP(working_byte);break;
         case (0x09): Gameboy::ADD(R.bc);break;
         case (0x0a): Gameboy::LD(R.a, mem_at(R.bc));break;
         case (0x0b): Gameboy::DEC(R.bc);break;
@@ -26,7 +26,7 @@ void Gameboy::decode() {
         case (0x15): Gameboy::DEC(R.d);break;
         case (0x16): Gameboy::LD(R.d, &working_byte);break;
         case (0x17): Gameboy::RL(R.a);break;
-        case (0x18): Gameboy::JR(&working_byte);break;
+        case (0x18): Gameboy::JR((sbyte*) &working_byte);break;
         case (0x19): Gameboy::ADD(R.de);break;
         case (0x1a): Gameboy::LD(R.a, mem_at(R.de));break;
         case (0x1b): Gameboy::DEC(R.de);break;
@@ -34,7 +34,7 @@ void Gameboy::decode() {
         case (0x1d): Gameboy::DEC(R.e);break;
         case (0x1e): Gameboy::LD(R.e, &working_byte);break;
         case (0x1f): Gameboy::RRC(R.a);break;
-        case (0x20): Gameboy::JRC(CC_NZ, &working_byte);break;
+        case (0x20): Gameboy::JRC(CC_NZ, (sbyte*) &working_byte);break;
         case (0x21): Gameboy::LD(R.hl, &working_word);break;
         case (0x22): Gameboy::LDI(mem_at(R.hl), R.a);break;
         case (0x23): Gameboy::INC(R.hl);break;
@@ -42,7 +42,7 @@ void Gameboy::decode() {
         case (0x25): Gameboy::DEC(R.h);break;
         case (0x26): Gameboy::LD(R.h, &working_byte);break;
         case (0x27): Gameboy::DAA();break;
-        case (0x28): Gameboy::JRC(CC_Z, &working_byte);break;
+        case (0x28): Gameboy::JRC(CC_Z, (sbyte*) &working_byte);break;
         case (0x29): Gameboy::ADD(R.hl);break;
         case (0x2a): Gameboy::LDI(R.a, mem_at(R.hl));break;
         case (0x2b): Gameboy::DEC(R.hl);break;
@@ -50,7 +50,7 @@ void Gameboy::decode() {
         case (0x2d): Gameboy::DEC(R.l);break;
         case (0x2e): Gameboy::LD(R.l, &working_byte);break;
         case (0x2f): Gameboy::CPL();break;
-        case (0x30): Gameboy::JRC(CC_NC, &working_byte);break;
+        case (0x30): Gameboy::JRC(CC_NC, (sbyte*) &working_byte);break;
         case (0x31): Gameboy::LD(R.sp, &working_word);break;
         case (0x32): Gameboy::LDD(mem_at(R.hl), R.a);break;
         case (0x33): Gameboy::INC(R.sp);break;
@@ -58,7 +58,7 @@ void Gameboy::decode() {
         case (0x35): Gameboy::DEC(mem_at(R.hl));break;
         case (0x36): Gameboy::LD(mem_at(R.hl), &working_byte);break;
         case (0x37): Gameboy::SCF();break;
-        case (0x38): Gameboy::JRC(CC_C, &working_byte);break;
+        case (0x38): Gameboy::JRC(CC_C, (sbyte*) &working_byte);break;
         case (0x39): Gameboy::ADD(R.sp);break;
         case (0x3a): Gameboy::LDD(R.a, mem_at(R.hl));break;
         case (0x3b): Gameboy::DEC(R.sp);break;
@@ -228,7 +228,7 @@ void Gameboy::decode() {
         case (0xe5): Gameboy::PUSH(R.hl);break;
         case (0xe6): Gameboy::AND(&working_byte);break;
         case (0xe7): Gameboy::RST(0x20);break;
-        case (0xe8): Gameboy::ADD_SP(&working_byte);break;
+        case (0xe8): Gameboy::ADD_SP((sbyte*) &working_byte);break;
         case (0xe9): Gameboy::JP(R.hl);break;
         case (0xea): Gameboy::LD(mem_at(working_word), R.a);break;
         case (0xee): Gameboy::XOR(&working_byte);break;

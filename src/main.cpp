@@ -3,26 +3,33 @@
 #include <fstream>
 #include <chrono>
 #include <math.h>
+#include <sys/stat.h>
 
 #define MS chrono::duration_cast<std::chrono::nanoseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count()
 
 using namespace std;
 int main(void) {
-    Gameboy gb;
+    struct stat result;
+    Gameboy gb = Gameboy();
     
     // Loading the program into memory
-    ifstream rom ("bootrom.gb", ios::binary);
-    streampos size = rom.tellg();
-    rom.seekg(0);
-    rom.read((char *)gb.mem, size);
+    if (stat("bootrom.gb", &result)) {
+        printf("bootrom.gb not found, comitting dead!\n");
+        exit(-1);
+    }
+    ifstream rom;
+    rom.open("bootrom.gb", ios::in | ios::binary);
+    rom.read((char*) gb.mem, result.st_size);
+    
 
-    cout << "Loaded file successfully" << endl;
+    cout << "Loaded file successfully, size = " << result.st_size << endl;
 
     // Running the program
     uint64_t time_start = MS;
     while (*gb.R.pc != 0xFFFF) {
         gb.step();
         gb.R.print_regs();
+        gb.R.print_flags();
         // fflush(stdout);
     }
     uint64_t time_end = MS;

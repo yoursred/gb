@@ -14,7 +14,7 @@ class Gameboy {
     byte working_byte = 0;
     word working_word = 0;
     
-    word new_pc =  *R.pc;
+    word new_pc = 0;
     byte current_cycles = 0;
     unsigned long cycles = 0;
     unsigned long instructions = 0;
@@ -49,7 +49,7 @@ class Gameboy {
     
     // --SECTION-- ARITHMETIC
     void ADC(byte *src);
-    void ADD(byte *src); void ADD(word *src); void ADD_SP(byte *src);
+    void ADD(byte *src); void ADD(word *src); void ADD_SP(sbyte *src);
     void AND(byte *src);
     void CP (byte *src);
     void DEC(byte *dst); void DEC(word *dst);
@@ -81,6 +81,7 @@ class Gameboy {
     // --SECTION-- LOAD
     void LD (byte *dst, byte *src);
     void LD (word *dst, word *src);
+    void LD16SP(word dst);
     void LDI(byte *dst, byte *src);
     void LDD(byte *dst, byte *src);
     void LDHL(void);
@@ -89,8 +90,8 @@ class Gameboy {
     // --SECTION-- JUMPS
     void CALL(word *address);
     void CALLC(byte cc, word *address);
-    void JR (byte *offset);
-    void JRC(byte cc, byte *offset);
+    void JR (sbyte *offset);
+    void JRC(byte cc, sbyte *offset);
     void JP (word *address);
     void JPC (byte cc, word *address);
     void RET(void);

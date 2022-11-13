@@ -10,11 +10,11 @@ BUILDDIR=build
 .PHONY: clean
 
 build/gb: build/*.o
-	$(GPP) -g -o build/gb build/*.o
+	$(GPP) -g -O3 -o build/gb build/*.o
 	rm build/*.o
 
 build/*.o: src/*.cpp
-	$(GPP) -g -c $(FILES) -I$(INCL)
+	$(GPP) -g -O3 -c $(FILES) -I$(INCL)
 	mv *.o $(BUILDDIR)
 
 clean:

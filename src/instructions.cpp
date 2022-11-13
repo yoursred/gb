@@ -26,9 +26,13 @@ void Gameboy::ADD(word *src) {
     *Gameboy::R.a += *src;
 }
 
-void Gameboy::ADD_SP(byte *src) { // ADD SP, e8
+void Gameboy::ADD_SP(sbyte *src) { // ADD SP, e8
     // TODO: flags, note: src is signed
     *Gameboy::R.a += *src;
+    R.update_flag(FLAG_H, ((*R.sp & 0xf) + (*src & 0xf) & 0x10));
+    R.update_flag(FLAG_C, ((*R.sp & 0xff) + (*src) & 0x100));
+    R.set_flags("00--");
+
 }
 
 void Gameboy::AND(byte *src){
@@ -98,17 +102,17 @@ void Gameboy::XOR(byte *src) {
 
 
 // --SECTION-- BIT OPS
-void Gameboy::BIT(byte bit, byte *src) {
-    R.update_flag(FLAG_Z, (*src) & (1 << bit));
+void Gameboy::BIT(byte n, byte *src) {
+    R.update_flag(FLAG_Z, ~(*src) & (1 << n)); //  Set if bit n of src is 0.
     R.set_flags("-01-");
 }
 
-void Gameboy::RES(byte bit, byte *dst) {
-    (*dst) &= ~(1 << bit);
+void Gameboy::RES(byte n, byte *dst) {
+    (*dst) &= ~(1 << n);
 }
 
-void Gameboy::SET(byte bit, byte *dst) {
-    (*dst) |= (1 << bit);
+void Gameboy::SET(byte n, byte *dst) {
+    (*dst) |= (1 << n);
 }
 
 void Gameboy::SWAP(byte *dst) {
@@ -181,6 +185,11 @@ void Gameboy::LD(word *dst, word *src) {
     *dst = *src;
 }
 
+void Gameboy::LD16SP(word dst) {
+    *mem_at(dst) = *R.sp & 0xFF;
+    *mem_at(dst + 1) = *R.sp >> 8;
+}
+
 void Gameboy::LDI(byte *dst, byte *src) {
     *dst = *src;
     (*R.hl)++;
@@ -192,7 +201,12 @@ void Gameboy::LDD(byte *dst, byte *src) {
 }
 
 void Gameboy::LDHL() {
-    *R.hl = *R.sp + working_byte;
+    sbyte s = *((sbyte*) &working_byte);
+    *R.hl = *R.sp + s;
+    R.update_flag(FLAG_H, ((*R.sp & 0xf) + (s & 0xf) & 0x10));
+    R.update_flag(FLAG_C, ((*R.sp & 0xff) + (s) & 0x100));
+    R.set_flags("00--");
+    
 }
 
 
@@ -214,11 +228,11 @@ void Gameboy::CALLC(byte cc, word *address) {
     }
 }
 
-void Gameboy::JR(byte *offset) {
+void Gameboy::JR(sbyte *offset) {
     Gameboy::new_pc += *offset;
 }
 
-void Gameboy::JRC(byte cc, byte *offset) {
+void Gameboy::JRC(byte cc, sbyte *offset) {
     if (R.get_cc(cc)) {
         Gameboy::new_pc += *offset;
         current_cycles = 12;
