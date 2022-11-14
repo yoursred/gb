@@ -13,7 +13,7 @@ CXXFLAGS=-I$(INCL) -g -pedantic
 
 $(shell mkdir -p build/cpu build/ppu)
 
-build/gb: build/main.o build/cpu/*.o
+build/gb: build/main.o build/cpu/*.o build/ppu/*.o
 	$(GPP) $(CXXFLAGS) $(BUILDDIR)/cpu/*.o $(BUILDDIR)/main.o  -o $(BUILDDIR)/gb
 
 build/main.o: src/main.cpp
@@ -22,10 +22,10 @@ build/main.o: src/main.cpp
 # build/ppu.o: build/ppu/*.o
 # 	ld -r $(BUILDDIR)/ppu/*.o -o $(BUILDDIR)/ppu.o -nostdlib
 
-# build/ppu/*.o: src/ppu/*
-# 	mkdir -p build/ppu/
-# 	$(GPP) $(CXXFLAGS) -c src/ppu/*.cpp
-# 	mv *.o $(BUILDDIR)/ppu
+build/ppu/*.o: src/ppu/*
+	mkdir -p build/ppu/
+	$(GPP) $(CXXFLAGS) -c src/ppu/*.cpp
+	mv *.o $(BUILDDIR)/ppu
 
 
 # build/cpu.o: build/cpu/*.o
