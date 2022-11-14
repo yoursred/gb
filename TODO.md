@@ -1,5 +1,9 @@
 - [x] Instruction fetching from opcode
 - [x] 0xCB prefixed instruction fetching
 - [x] Cycle counting
+- [ ] Documentation and useful comments
+- [ ] Touch up python tools to always generate usable code
+- [ ] Create a separate memory class that allows bank switching and a more accurate databus 
 - [ ] Graphics
 - [ ] Explore C++'s reference feature
+- [ ] Add unit tests

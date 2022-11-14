@@ -8,7 +8,7 @@ def template(opc, d: dict):
     # return '{' + f'{d["length"]}, {__(d)}' + '}'
     if d is None:
         return ''
-    return f'        // case ({opc}): Gameboy::{d["mnemonic"]}();break;'
+    return f'        // case ({opc}): CPU::{d["mnemonic"]}();break;'
 
 
 with open('opcodes.json', 'rb') as fp:

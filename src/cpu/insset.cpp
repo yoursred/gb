@@ -1,5 +1,5 @@
-#include "insset.h"
-#include "gb.h"
+#include "cpu/insset.h"
+#include "cpu/cpu.h"
 
 
 byte unprefixed[][3] = {

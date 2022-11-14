@@ -11,9 +11,9 @@ def template(opc, d: dict):
     if d is None:
         return ''
     if __(d) == 2:
-        return f'        // case ({opc}): Gameboy::{d["mnemonic"]}({op(d["operand1"])}, {op(d["operand2"])}); break;'
+        return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}, {op(d["operand2"])}); break;'
     else:
-        return f'        // case ({opc}): Gameboy::{d["mnemonic"]}({op(d["operand1"])}); break;'
+        return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}); break;'
 
 
 with open('opcodes.json', 'rb') as fp:

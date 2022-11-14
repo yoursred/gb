@@ -4,33 +4,35 @@
 #include "include.h"
 
 
-class Gameboy {
+class CPU {
     public:
-    // GbRegisters registers;
+    // Registers registers;
     byte mem[0x10000] = {0};
+    CPU();
     byte* mem_at(word* address); byte* mem_at(word address);
 
     byte opcode = *mem_at(R.pc);
     byte working_byte = 0;
     word working_word = 0;
     
+    bool is_halted = false;
     word new_pc = 0;
     byte current_cycles = 0;
     unsigned long cycles = 0;
     unsigned long instructions = 0;
-    Gameboy();
+    
 
     byte fetch_instruction();
     void step();
     void decode();
     void decode_prefixed();
 
-    class GbRegisters {
+    class Registers {
         public:
         word *af, *bc, *de, *hl, *sp, *pc;
         byte *a, *f, *b, *c, *d, *e, *h, *l;
 
-        GbRegisters(void);
+        Registers(void);
 
         void print_regs(void);
         void print_flags(void);
@@ -43,7 +45,7 @@ class Gameboy {
         void set_flags(const char *flagstr);
     };
 
-    GbRegisters R;
+    Registers R;
 
     private:
     

@@ -82,7 +82,7 @@
     },
     "makefile.launchConfigurations": [
         {
-            "cwd": "/home/yoursred/Documents/Projects/gb/build",
+            "cwd": "/home/yoursred/Documents/Projects/gb",
             "binaryPath": "/home/yoursred/Documents/Projects/gb/build/gb",
             "binaryArgs": []
         }

@@ -7,15 +7,35 @@ INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
 
+CXXFLAGS=-I$(INCL) -g -pedantic
+
 .PHONY: clean
 
-build/gb: build/*.o
-	$(GPP) -g -O3 -o build/gb build/*.o
-	rm build/*.o
+$(shell mkdir -p build/cpu build/ppu)
 
-build/*.o: src/*.cpp
-	$(GPP) -g -O3 -c $(FILES) -I$(INCL)
-	mv *.o $(BUILDDIR)
+build/gb: build/main.o build/cpu/*.o
+	$(GPP) $(CXXFLAGS) $(BUILDDIR)/cpu/*.o $(BUILDDIR)/main.o  -o $(BUILDDIR)/gb
+
+build/main.o: src/main.cpp
+	$(GPP) $(CXXFLAGS) -c src/main.cpp -o $(BUILDDIR)/main.o
+
+# build/ppu.o: build/ppu/*.o
+# 	ld -r $(BUILDDIR)/ppu/*.o -o $(BUILDDIR)/ppu.o -nostdlib
+
+# build/ppu/*.o: src/ppu/*
+# 	mkdir -p build/ppu/
+# 	$(GPP) $(CXXFLAGS) -c src/ppu/*.cpp
+# 	mv *.o $(BUILDDIR)/ppu
+
+
+# build/cpu.o: build/cpu/*.o
+# 	ld -r $(BUILDDIR)/cpu/*.o -o $(BUILDDIR)/cpu.o -nostdlib
+
+build/cpu/*.o: src/cpu/*
+	mkdir -p build/cpu
+	$(GPP) $(CXXFLAGS) -c src/cpu/*.cpp
+	mv *.o $(BUILDDIR)/cpu
+
 
 clean:
-	rm -f build/*
+	rm -rf build

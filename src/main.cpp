@@ -1,4 +1,4 @@
-#include "gb.h"
+#include "cpu/cpu.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -10,16 +10,17 @@
 using namespace std;
 int main(void) {
     struct stat result;
-    Gameboy gb = Gameboy();
+    CPU gb = CPU();
     
     // Loading the program into memory
-    if (stat("bootrom.gb", &result)) {
-        printf("bootrom.gb not found, comitting dead!\n");
+    if (stat("pattern.bin", &result)) {
+        printf("pattern.bin not found, comitting dead!\n");
         exit(-1);
     }
     ifstream rom;
-    rom.open("bootrom.gb", ios::in | ios::binary);
+    rom.open("pattern.bin", ios::in | ios::binary);
     rom.read((char*) gb.mem, result.st_size);
+    rom.close();
     
 
     cout << "Loaded file successfully, size = " << result.st_size << endl;
@@ -29,7 +30,6 @@ int main(void) {
     while (*gb.R.pc != 0xFFFF) {
         gb.step();
         gb.R.print_regs();
-        gb.R.print_flags();
         // fflush(stdout);
     }
     uint64_t time_end = MS;
@@ -39,5 +39,9 @@ int main(void) {
     printf("Cycles: %lu\n", gb.cycles);
     printf("Instructions: %lu\n", gb.instructions);
     printf("Frequency: %.4lfMHz\n", (gb.cycles * 1000.0F) / duration);
+
+    ofstream memory ("memory.bin", ios::binary);
+    memory.write((char*) gb.mem, 0x10000);
+    memory.close();
 
 }
