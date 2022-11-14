@@ -11,7 +11,7 @@ class CPU {
     CPU();
     byte* mem_at(word* address); byte* mem_at(word address);
 
-    byte opcode = *mem_at(R.pc);
+    byte opcode = 0;
     byte working_byte = 0;
     word working_word = 0;
     

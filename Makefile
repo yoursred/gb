@@ -1,13 +1,14 @@
 # Basic bitch makefile
 
-GPP=g++
+GPP=g++ 
+# x86_64-apple-darwin21-g++-12
 
 SRCDIR=src
 INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
 
-CXXFLAGS=-I$(INCL) -g -pedantic
+CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11
 
 .PHONY: clean
 

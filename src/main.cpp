@@ -35,10 +35,10 @@ int main(void) {
     uint64_t time_end = MS;
     uint64_t duration = time_end - time_start;
 
-    printf("\nTime: %luns\n", duration);
+    printf("\nTime: %lluns\n", duration);
     printf("Cycles: %lu\n", gb.cycles);
     printf("Instructions: %lu\n", gb.instructions);
-    printf("Frequency: %.4lfMHz\n", (gb.cycles * 1000.0F) / duration);
+    printf("Frequency: %.02lfMHz\n", (gb.cycles * 1000.0F) / duration);
 
     ofstream memory ("memory.bin", ios::binary);
     memory.write((char*) gb.mem, 0x10000);
