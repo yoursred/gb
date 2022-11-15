@@ -15,7 +15,7 @@ typedef signed char sbyte;
 typedef unsigned short word;
 
 #define NB (byte*) malloc(sizeof(byte))
-#define NW (word*) malloc(sizeof(word))\
+#define NW (word*) malloc(sizeof(word))
 
 
 

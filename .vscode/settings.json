@@ -78,7 +78,8 @@
         "memory_resource": "c",
         "stop_token": "c",
         "cinttypes": "c",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "iomanip": "cpp"
     },
     "makefile.launchConfigurations": [
         {

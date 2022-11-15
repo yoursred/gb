@@ -1,5 +1,6 @@
 #include "cpu/cpu.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <chrono>
 #include <math.h>
@@ -19,7 +20,7 @@ int main(void) {
     }
     ifstream rom;
     rom.open("pattern.bin", ios::in | ios::binary);
-    rom.read((char*) gb.mem, result.st_size);
+    // rom.read((char*) gb.mem, result.st_size);
     rom.close();
     
 
@@ -29,16 +30,20 @@ int main(void) {
     uint64_t time_start = MS;
     while (*gb.R.pc != 0xFFFF) {
         gb.step();
-        gb.R.print_regs();
+        // gb.R.print_regs();
         // fflush(stdout);
     }
     uint64_t time_end = MS;
     uint64_t duration = time_end - time_start;
 
-    printf("\nTime: %lluns\n", duration);
-    printf("Cycles: %lu\n", gb.cycles);
-    printf("Instructions: %lu\n", gb.instructions);
-    printf("Frequency: %.02lfMHz\n", (gb.cycles * 1000.0F) / duration);
+    // printf("\nTime: %lluns\n", duration);
+    // printf("Cycles: %lu\n", gb.cycles);
+    // printf("Instructions: %lu\n", gb.instructions);
+    // printf("Frequency: %.02lfMHz\n", (gb.cycles * 1000.0F) / duration);
+    cout << endl << "Time: " << duration << "ns" << endl;
+    cout << "Cycles: " << gb.cycles << endl;
+    cout << "Instructions: " << gb.instructions << endl;
+    cout << "Frequency: " << fixed << setprecision(2) << ((gb.cycles * 1000.0F) / duration) << "MHz" << endl;
 
     ofstream memory ("memory.bin", ios::binary);
     memory.write((char*) gb.mem, 0x10000);
