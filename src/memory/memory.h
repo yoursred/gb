@@ -45,6 +45,8 @@ class Memory {
     byte ram_bank = 0;
     bool ram_enable = false;
     bool mbc1_adv_banking = false;
+    byte mbc3_latch_register = 0xFF;
+    bool mbc3_latch = false;
     word rom_banks = 0;
     byte ram_banks = 0;
     bool boot_rom = false;
@@ -62,13 +64,13 @@ class Memory {
 
     // private:
     // byte MBCnone_read(word address);
-    // byte MBC1_read(word address);
-    // byte MBC2_read(word address); 
-    // byte MBC3_read(word address); 
+    byte MBC1_read(word address);
+    byte MBC2_read(word address);
+    byte MBC3_read(word address); 
     // byte MBC5_read(word address); 
 
     // void MBCnone(word address, byte value);
-    // void MBC1(word address, byte value);
+    void MBC1(word address, byte value);
     // void MBC2(word address, byte value); 
     // void MBC3(word address, byte value); 
     // void MBC5(word address, byte value); 

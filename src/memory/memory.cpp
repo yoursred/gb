@@ -159,7 +159,11 @@ void Memory::write_regs(word address, byte value) {
             } else if (address < 0x6000) {
                 ram_bank = value;
             } else {
-                
+                if (value == 0) {
+                    mbc3_latch_register = 0;
+                } else if (value == 1 && mbc3_latch_register == 0) {
+                    mbc3_latch = !mbc3_latch;
+                }
             }
             
             break;
