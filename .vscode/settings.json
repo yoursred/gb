@@ -79,7 +79,9 @@
         "stop_token": "c",
         "cinttypes": "c",
         "fstream": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "filesystem": "cpp",
+        "stack": "cpp"
     },
     "makefile.launchConfigurations": [
         {
@@ -88,5 +90,6 @@
             "binaryArgs": []
         }
     ],
-    "C_Cpp.codeAnalysis.clangTidy.enabled": true
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }
