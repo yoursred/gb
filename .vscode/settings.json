@@ -88,6 +88,11 @@
             "cwd": "/home/yoursred/Documents/Projects/gb",
             "binaryPath": "/home/yoursred/Documents/Projects/gb/build/gb",
             "binaryArgs": []
+        },
+        {
+            "cwd": "/home/yoursred/Documents/Projects/gb/build",
+            "binaryPath": "/home/yoursred/Documents/Projects/gb/build/gb",
+            "binaryArgs": []
         }
     ],
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,

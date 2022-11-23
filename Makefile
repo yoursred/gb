@@ -8,14 +8,14 @@ INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
 
-CXXFLAGS=-I$(INCL) -O1 -g -Wall -Wextra
+CXXFLAGS=-I$(INCL) -g -Wall -Wextra
 
 .PHONY: clean
 
 $(shell mkdir -p build/cpu build/ppu)
 
-build/gb: build/main.o build/cpu/*.o build/ppu/*.o
-	$(GPP) $(CXXFLAGS) $(BUILDDIR)/cpu/*.o $(BUILDDIR)/main.o  -o $(BUILDDIR)/gb
+build/gb: build/main.o build/cpu/*.o build/memory/*.o build/ppu/*.o
+	$(GPP) $(CXXFLAGS) $(BUILDDIR)/cpu/*.o $(BUILDDIR)/memory/*.o $(BUILDDIR)/main.o  -o $(BUILDDIR)/gb
 
 build/main.o: src/main.cpp
 	$(GPP) $(CXXFLAGS) -c src/main.cpp -o $(BUILDDIR)/main.o
@@ -31,6 +31,11 @@ build/ppu/*.o: src/ppu/*
 
 # build/cpu.o: build/cpu/*.o
 # 	ld -r $(BUILDDIR)/cpu/*.o -o $(BUILDDIR)/cpu.o -nostdlib
+
+build/memory/*.o: src/memory/*
+	mkdir -p build/memory
+	$(GPP) $(CXXFLAGS) -c src/memory/*.cpp
+	mv *.o $(BUILDDIR)/memory
 
 build/cpu/*.o: src/cpu/*
 	mkdir -p build/cpu

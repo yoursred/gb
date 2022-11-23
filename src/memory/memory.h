@@ -1,3 +1,6 @@
+#ifndef __MEMORY_H
+#define __MEMORY_H
+
 #include "include.h"
 
 #define MODE_ROM 0
@@ -29,9 +32,9 @@
 class Memory {
     public:
     // byte BANK_0[0x4000];
-    byte BANKS[0x4000 * 512]; // MBC5 supports up to 512 RAM banks
+    byte BANKS[0x4000 ]; // MBC5 supports up to 512 RAM banks
     byte VRAM  [0x2000];
-    byte ERAM  [0x2000 * 16]; // MBC5 supports up to 16 RAM banks
+    byte ERAM  [0x2000 ]; // MBC5 supports up to 16 RAM banks
     byte WRAM  [0x2000];
     byte OAM_T [0x100];
     byte IO_R  [0x80];
@@ -67,7 +70,7 @@ class Memory {
     byte MBC1_read(word address);
     byte MBC2_read(word address);
     byte MBC3_read(word address); 
-    // byte MBC5_read(word address); 
+    byte MBC5_read(word address);
 
     // void MBCnone(word address, byte value);
     void MBC1(word address, byte value);
@@ -75,3 +78,5 @@ class Memory {
     // void MBC3(word address, byte value); 
     // void MBC5(word address, byte value); 
 };
+
+#endif

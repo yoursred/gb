@@ -1,4 +1,5 @@
 #include "cpu/cpu.h"
+#include "memory/memory.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -8,8 +9,19 @@
 
 #define MS chrono::duration_cast<std::chrono::nanoseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count()
 
-using namespace std;
+// using namespace std;
+// using std::ifstream;
 int main(void) {
+    std::ifstream fs;
+    byte rom[0x4000];
+    fs.open("roms/tetris.gb", std::ios::in | std::ios::binary);
+    fs.read((char*) rom, 0x4000);
+    fs.close();
+
+    Memory cart = Memory(rom, 0x4000);
+    std::cout << "ROM cart mode: " << std::hex << cart.mode << std::endl;
+    return 0;
+    /*
     struct stat result;
     CPU gb = CPU();
     
@@ -48,5 +60,5 @@ int main(void) {
     ofstream memory ("memory.bin", ios::binary);
     memory.write((char*) gb.mem, 0x10000);
     memory.close();
-
+    */
 }

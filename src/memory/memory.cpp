@@ -35,6 +35,7 @@ Memory::Memory(byte ROM[], unsigned int size) {
     rom_banks = 2 * (1 << ROM[0x148]);
     
     switch (ROM[0x149]) { // RAM size
+        case (0): ram_banks =  0; break;
         case (2): ram_banks =  1; break;
         case (3): ram_banks =  4; break;
         case (4): ram_banks = 16; break; // Nintendo!
@@ -168,7 +169,17 @@ void Memory::write_regs(word address, byte value) {
             
             break;
         case (MODE_MBC5):
-            
+            if (address < 0x2000) {
+                ram_enable = (value == 0xA);
+            } else if (address < 0x3000) {
+                rom_bank &= 0xF0;
+                rom_bank |= value;
+            } else if (address < 0x4000) {
+                rom_bank &= 0x0F;
+                rom_bank |= ((!!value) << 8);
+            } else if (address < 0x6000) {
+                ram_bank = value & 0xF;
+            }
             break;
     }
 }
