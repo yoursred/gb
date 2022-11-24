@@ -19,46 +19,7 @@ int main(void) {
     fs.close();
 
     Memory cart = Memory(rom, 0x4000);
-    std::cout << "ROM cart mode: " << std::hex << cart.mode << std::endl;
+    printf("ROM cart mode: 0x%02x", cart.mode);
+    // std::cout << "ROM cart mode: " << std::hex << cart.mode << std::endl;
     return 0;
-    /*
-    struct stat result;
-    CPU gb = CPU();
-    
-    // Loading the program into memory
-    if (stat("pattern.bin", &result)) {
-        printf("pattern.bin not found, comitting dead!\n");
-        exit(-1);
-    }
-    ifstream rom;
-    rom.open("pattern.bin", ios::in | ios::binary);
-    // rom.read((char*) gb.mem, result.st_size);
-    rom.close();
-    
-
-    cout << "Loaded file successfully, size = " << result.st_size << endl;
-
-    // Running the program
-    uint64_t time_start = MS;
-    while (*gb.R.pc != 0xFFFF) {
-        gb.step();
-        // gb.R.print_regs();
-        // fflush(stdout);
-    }
-    uint64_t time_end = MS;
-    uint64_t duration = time_end - time_start;
-
-    // printf("\nTime: %lluns\n", duration);
-    // printf("Cycles: %lu\n", gb.cycles);
-    // printf("Instructions: %lu\n", gb.instructions);
-    // printf("Frequency: %.02lfMHz\n", (gb.cycles * 1000.0F) / duration);
-    cout << endl << "Time: " << duration << "ns" << endl;
-    cout << "Cycles: " << gb.cycles << endl;
-    cout << "Instructions: " << gb.instructions << endl;
-    cout << "Frequency: " << fixed << setprecision(2) << ((gb.cycles * 1000.0F) / duration) << "MHz" << endl;
-
-    ofstream memory ("memory.bin", ios::binary);
-    memory.write((char*) gb.mem, 0x10000);
-    memory.close();
-    */
 }

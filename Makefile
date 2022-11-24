@@ -8,7 +8,7 @@ INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
 
-CXXFLAGS=-I$(INCL) -g -Wall -Wextra
+CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11
 
 .PHONY: clean
 

@@ -2,13 +2,16 @@
 #define __GB_H
 
 #include "include.h"
+#include "memory/memory.h"
 
 
 class CPU {
     public:
     // Registers registers;
-    byte mem[0x10000] = {0};
-    CPU();
+    // byte memory[0x10000] = {0};
+    Memory& memory;
+
+    CPU(Memory& memory);
     byte* mem_at(word* address); byte* mem_at(word address);
 
     byte opcode = 0;
@@ -50,52 +53,52 @@ class CPU {
     private:
     
     // --SECTION-- ARITHMETIC
-    void ADC(byte *src);
-    void ADD(byte *src); void ADD(word *src); void ADD_SP(sbyte *src);
-    void AND(byte *src);
-    void CP (byte *src);
-    void DEC(byte *dst); void DEC(word *dst);
-    void INC(byte *dst); void INC(word *dst);
-    void OR (byte *src);
-    void SBC(byte *src);
-    void SUB(byte *src);
-    void XOR(byte *src);
+    void ADC(MP src);
+    void ADD(MP src); void ADD(word *src); void ADD_SP(sbyte *src);
+    void AND(MP src);
+    void CP (MP src);
+    void DEC(MP dst); void DEC(word *dst);
+    void INC(MP dst); void INC(word *dst);
+    void OR (MP src);
+    void SBC(MP src);
+    void SUB(MP src);
+    void XOR(MP src);
 
     // --SECTION-- BIT OPS
-    void BIT(byte bit, byte *src);
-    void RES(byte bit, byte *dst);
-    void SET(byte bit, byte *dst);
-    void SWAP(byte *dst);
+    void BIT(byte bit, MP src);
+    void RES(byte bit, MP dst);
+    void SET(byte bit, MP dst);
+    void SWAP(MP dst);
 
     // --SECTION-- BIT SHIFTS
-    void RL (byte *dst);
-    void RLA(byte *dst);
-    void RLC(byte *dst);
-    void RLCA(byte *dst);
-    void RR (byte *dst);
-    void RRA(byte *dst);
-    void RRC(byte *dst);
-    void RRCA(byte *dst); 
-    void SLA(byte *dst);
-    void SRA(byte *dst);
-    void SRL(byte *dst);
+    void RL (MP dst);
+    void RLA(MP dst);
+    void RLC(MP dst);
+    void RLCA(MP dst);
+    void RR (MP dst);
+    void RRA(MP dst);
+    void RRC(MP dst);
+    void RRCA(MP dst); 
+    void SLA(MP dst);
+    void SRA(MP dst);
+    void SRL(MP dst);
 
     // --SECTION-- LOAD
-    void LD (byte *dst, byte *src);
+    void LD (MP dst, MP src);
     void LD (word *dst, word *src);
     void LD16SP(word dst);
-    void LDI(byte *dst, byte *src);
-    void LDD(byte *dst, byte *src);
+    void LDI(MP dst, MP src);
+    void LDD(MP dst, MP src);
     void LDHL(void);
     
 
     // --SECTION-- JUMPS
-    void CALL(word *address);
-    void CALLC(byte cc, word *address);
-    void JR (sbyte *offset);
-    void JRC(byte cc, sbyte *offset);
-    void JP (word *address);
-    void JPC (byte cc, word *address);
+    void CALL(word address);
+    void CALLC(byte cc, word address);
+    void JR (MP offset);
+    void JRC(byte cc, MP offset);
+    void JP (word address);
+    void JPC (byte cc, word address);
     void RET(void);
     void RETC(byte cc);
     void RETI();

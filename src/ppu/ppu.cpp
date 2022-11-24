@@ -35,17 +35,23 @@ void PPU::tick() {
         case PIXEL_TRANSFER: // 144 * 160 = 23040
             // Push out 8 pixels = (2bpp * 8) bits or 2 bytes to buffer
             // Switch to HBLANK if x=160
-            // 
-            x++;
+            if (x == 0) {
+                fifo_size = 0;
+                fifo = 0;
+            }
+            fetch(); // FIFO fetch is always executed in mode 3
+            if (fifo_size > 8) {
+                push_pixel(); // Only push pixels if we have more than 8 in fifo
+                x++;
+            }
             if (x == 160) {
                 STAT = (STAT & ~2) | HBLANK;
             }
         break;
-        case OAM_SEARCH: //
+        case OAM_SEARCH:
             // TODO: Implement objects ("sprites")
-            if (ticks == 40) {
+            if (ticks == 80) {
                 x = 0;
-
                 STAT = (STAT & ~2) | PIXEL_TRANSFER;
             }
         break;
@@ -54,7 +60,7 @@ void PPU::tick() {
         if (ticks == 456){ // At end of scanline
             ticks = 0;
             LY++;
-            if (LY == 144) { // Visible `line` done, switch to vblank
+            if (LY == 144) { // Visible `lines` done, switch to vblank
                 STAT = (STAT & ~2) | VBLANK;
             }
             else { // Start next normal scanline
@@ -78,17 +84,23 @@ void PPU::tick() {
 }
 
 void PPU::fetch() {
-    // Push a pixel to screen buffer
-    buffer[x + LY * 40] = ((fifo & 0xC0000000) >> 30);
+    // Fetch 8 pixels from VRAM and put them into fifo if fifo_size <= 8
+    fetch_ticks++;
+    if (fetch_ticks == 6 && fifo_size <= 8) {
+        // Get address of the tile data in current tile map
+        word cluster = ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
+        tile_id = VRAM[0x1800 + (LY * 32) + x];
+        fifo &= (0xFFFF0000 << (2 * (8 - fifo_size))); // Zero out the bits to be updated
+        fifo |= cluster << (2 * (8 - fifo_size));
+        fifo_size += 8;
+    }
+    fetch_ticks %= 6;
+}
+
+void inline PPU::push_pixel() {
+    buffer[LY * 160 + x] = ((fifo & (0b11 << 30)) >> 30);
     fifo <<= 2;
     fifo_size--;
-    if (fifo_size <= 8) {
-        // Get address of the tile data in current tile map
-        tile_id = VRAM[0x1800 + (LY * 32) + x];
-        fifo &= 0xFFFF0000;
-        fifo |= ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
-        fifo_size = 16;
-    }
 }
 
 
@@ -98,7 +110,8 @@ void PPU::operator delete(void* obj) {
 }
 
 word unfuck_tile_data(word x) {
-    // This works
+    // this turns 0b_xxxxxxxxyyyyyyyy into  0b_xyxyxyxyxyxyxyxy
+    // TODO: make it apply color palettes
     word ret = 0;
     for (int i = 0; i < 8; i++) {
         ret |= ((x & (1 << i)) << i);

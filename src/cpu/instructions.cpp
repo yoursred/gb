@@ -2,8 +2,9 @@
 
 
 // --SECTION-- ARITHMETIC
-void CPU::ADC(byte *src) {
-    byte x = *src + R.get_flag(FLAG_C);
+void CPU::ADC(MP src) {
+    byte x = src;
+    x += R.get_flag(FLAG_C);
     R.unset_flag(FLAG_N);
     R.update_flag(FLAG_H, ((*R.a & 0xf) + (x & 0xf) & 0x10));
     R.update_flag(FLAG_C, ((*R.a) + (x) & 0x100));
@@ -212,15 +213,15 @@ void CPU::LDHL() {
 
 // --SECTION-- JUMPS
 void CPU::CALL(word *address) {
-    mem[--(*R.sp)] = new_pc >> 8;
-    mem[--(*R.sp)] = new_pc;
+    memory[--(*R.sp)] = new_pc >> 8;
+    memory[--(*R.sp)] = new_pc;
     new_pc = *address;
 }
 
 void CPU::CALLC(byte cc, word *address) {
     if (R.get_cc(cc)) {
-        mem[--(*R.sp)] = new_pc >> 8;
-        mem[--(*R.sp)] = new_pc;
+        memory[--(*R.sp)] = new_pc >> 8;
+        memory[--(*R.sp)] = new_pc;
         new_pc = *address;
         current_cycles = 24;
     } else {
@@ -255,14 +256,14 @@ void CPU::JPC(byte cc, word *address) {
 }
 
 void CPU::RET() {
-    new_pc = mem[(*R.sp)++];
-    new_pc |= mem[(*R.sp)++] << 8;
+    new_pc = memory[(*R.sp)++];
+    new_pc |= memory[(*R.sp)++] << 8;
 }
 
 void CPU::RETC(byte cc) {
     if (R.get_cc(cc)) {
-        new_pc = mem[(*R.sp)++];
-        new_pc |= mem[(*R.sp)++] << 8;
+        new_pc = memory[(*R.sp)++];
+        new_pc |= memory[(*R.sp)++] << 8;
         current_cycles = 20;
     } else {
         current_cycles = 8;
@@ -270,9 +271,9 @@ void CPU::RETC(byte cc) {
 }
 
 void CPU::RETI() {
-    new_pc = mem[(*R.sp)++];
-    new_pc |= mem[(*R.sp)++] << 8;
-    mem[0xFFFF] = 1;
+    new_pc = memory[(*R.sp)++];
+    new_pc |= memory[(*R.sp)++] << 8;
+    memory[0xFFFF] = 1;
 }
 
 void CPU::RST(byte vector) {
@@ -282,13 +283,13 @@ void CPU::RST(byte vector) {
 
 // --SECTION-- STACK
 void CPU::PUSH(word *src) {
-    mem[--(*R.sp)] = *src >> 8;
-    mem[--(*R.sp)] = *src;
+    memory[--(*R.sp)] = *src >> 8;
+    memory[--(*R.sp)] = *src;
 }
 
 void CPU::POP(word *dst) {
-    *dst = mem[(*R.sp)++];
-    *dst |= mem[(*R.sp)++] << 8;
+    *dst = memory[(*R.sp)++];
+    *dst |= memory[(*R.sp)++] << 8;
 }
 
 // --SECTION-- MISC
@@ -320,11 +321,11 @@ void CPU::DAA(void) {
 }
 
 void CPU::DI(void) {
-    mem[0xFFFF] = 0;
+    memory[0xFFFF] = 0;
 }
 
 void CPU::EI(void) {
-    mem[0xFFFF] = 1;
+    memory[0xFFFF] = 1;
 }
 
 void CPU::HALT(void) {

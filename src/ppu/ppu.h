@@ -23,7 +23,7 @@ typedef uint32_t FIFO;
 
 class PPU {
     byte &LCDC, &STAT, &SCY, &SCX, &LY, &LYC, 
-         &DMA, &WY, &WX, &BGP, &OBP0, &OBP1;
+         &DMA, &BGP, &OBP0, &OBP1, &WY, &WX;
     byte* VRAM;
     byte* OAM;
     
@@ -33,7 +33,7 @@ class PPU {
     
     
     byte fifo_size;
-    // byte fetch_state;
+    byte fetch_ticks;
     // bool fetch_tick;
 
     FIFO fifo; // this pushes pixels to the left

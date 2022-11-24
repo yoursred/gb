@@ -12,6 +12,9 @@
 #define MODE_BATTERY 32
 #define MODE_TIMER 64
 
+// TODO: Figure out a better name
+#define MEMORY_MAPPED 0
+#define DIRECT_POINTER 1
 
 
 /*  Start	End     Description         	        Notes
@@ -32,13 +35,13 @@
 class Memory {
     public:
     // byte BANK_0[0x4000];
-    byte BANKS[0x4000 ]; // MBC5 supports up to 512 RAM banks
-    byte VRAM  [0x2000];
-    byte ERAM  [0x2000 ]; // MBC5 supports up to 16 RAM banks
-    byte WRAM  [0x2000];
+    byte BANKS[0x4000]; // MBC5 supports up to 512 RAM banks
+    byte VRAM [0x2000];
+    byte ERAM [0x2000]; // MBC5 supports up to 16 RAM banks
+    byte WRAM [0x2000];
     byte OAM_T [0x100];
-    byte IO_R  [0x80];
-    byte HRAM  [0x7F];
+    byte IO_R   [0x80];
+    byte HRAM   [0x7F];
     byte IE;
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;
@@ -77,6 +80,56 @@ class Memory {
     // void MBC2(word address, byte value); 
     // void MBC3(word address, byte value); 
     // void MBC5(word address, byte value); 
+
+    struct MemoryProxy {
+        public:
+        Memory* parent;
+        word address;
+        byte mode;
+        byte* ptr;
+
+        MemoryProxy(Memory* parent, word address) : parent(parent), address(address), mode(MEMORY_MAPPED) {};
+        MemoryProxy(byte* ptr) : ptr(ptr), mode(DIRECT_POINTER) {};
+
+        operator byte() const {
+            if (mode == MEMORY_MAPPED) {
+                return parent->read(address);
+            }
+            else {
+                return *ptr;
+            }
+        };
+        operator sbyte() const {
+            if (mode == MEMORY_MAPPED) {
+                return parent->read(address);
+            }
+            else {
+                return *ptr;
+            }
+        };
+        operator word() const {
+            if (mode == MEMORY_MAPPED) {
+                return parent->read(address);
+            }
+            else {
+                return *ptr;
+            }
+        };
+        // operator int() const;
+
+        void operator =(byte const& value) {
+            if (mode == MEMORY_MAPPED) {
+                parent->write(address, value);
+            }
+            else {
+                *ptr = value;
+            }
+        };
+    };
+
+    MemoryProxy operator[](const word value);
 };
+
+typedef Memory::MemoryProxy MP;
 
 #endif

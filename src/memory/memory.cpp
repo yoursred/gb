@@ -3,6 +3,8 @@
 #include "memory/memory.h"
 
 Memory::Memory(byte ROM[], unsigned int size) {
+    // prox = MemoryProxy();
+
     switch (ROM[0x147]) { // Cart type
         case (0x00): mode = MODE_ROM; break;
         case (0x01): mode = MODE_MBC1; break;
@@ -58,10 +60,7 @@ Memory::Memory(byte ROM[], unsigned int size) {
 }
 
 byte Memory::read(word address) {
-    if (address < 0x4000) { // Bank 00/X0
-        if (mode & MODE_MBC1) {
-            return BANKS[address + (rom_bank & 0x60) * 0x4000 * mbc1_adv_banking];
-        }
+    if (address < 0x4000) {
         return BANKS[address];
     }
     if (address < 0x8000) { // Banks 01-XX, 00-XX for MBC5
@@ -70,17 +69,6 @@ byte Memory::read(word address) {
     if (address < 0xA000) // WRAM
         return VRAM[address - 0x8000];
     if (address < 0xC000) {
-        if (mode & MODE_MBC2) {
-            // The only edge case when reading ERAM is with MBC2
-            // It has 0x1FF half-bytes repeated 16 times
-            return ram_enable ? ERAM[(address & 0x1FF) - 0xA000] & 0xF : 0xF;
-        }
-        if (mode & MODE_MBC1) {
-            // Lol "only edge case" my ass
-            return 
-                ram_enable ? ERAM[address + ((rom_bank >> 5) * mbc1_adv_banking) * 0x2000 - 0xA000] : 0xFF;
-        }
-        
         return ram_enable ? ERAM[address + ram_bank * 0x2000 - 0xA000] : 0xFF;
     }
     if (address < 0xE000)
@@ -182,4 +170,8 @@ void Memory::write_regs(word address, byte value) {
             }
             break;
     }
+}
+
+Memory::MemoryProxy Memory::operator[](const word value) {
+    return Memory::MemoryProxy(this, value);
 }

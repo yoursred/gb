@@ -5,7 +5,7 @@
 #include "cpu/insset.h"
 
 
-CPU::CPU() {
+CPU::CPU(Memory& memory): memory(memory) {
     CPU::R = CPU::Registers();
     instructions = 0;
     // CPU::registers.mem = 
@@ -14,15 +14,15 @@ CPU::CPU() {
 }
 
 byte* CPU::mem_at(word* address) {
-    return &mem[*address];
+    return &memory[*address];
 }
 
 byte* CPU::mem_at(word address) {
-    return &mem[address];
+    return &memory[address];
 }
 
 byte CPU::fetch_instruction() {
-    CPU::opcode = mem[*R.pc];
+    CPU::opcode = memory[*R.pc];
     byte length;
     if (opcode != 0xCB){
         length = get_length(CPU::opcode);
@@ -34,11 +34,11 @@ byte CPU::fetch_instruction() {
     // printf("opc=0x%02X, length=%d\n", CPU::opcode, length);
     switch (length) { // maybe we don't really need this?
         case 3:
-            working_word = mem[*R.pc + 1];
-            working_word |= (word) mem[*R.pc + 2] << 8;
+            working_word = memory[*R.pc + 1];
+            working_word |= (word) memory[*R.pc + 2] << 8;
             break;
         case 2:
-            working_byte = mem[*R.pc + 1];
+            working_byte = memory[*R.pc + 1];
             break;
     }
     // printf("wb = 0x%02X, ww = 0x%04X\n", working_byte, working_word);
