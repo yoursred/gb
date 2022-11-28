@@ -20,6 +20,9 @@ PPU::PPU(Memory& mem):
     OAM = mem.OAM_T;
     ticks = 0;
     
+    STAT &= 0;
+    STAT |= 2;
+
     x = 0;
 
     // background = new byte[256 * 256];
@@ -35,7 +38,7 @@ void PPU::tick() {
         case PIXEL_TRANSFER: // 144 * 160 = 23040
             // Push out 8 pixels = (2bpp * 8) bits or 2 bytes to buffer
             // Switch to HBLANK if x=160
-            if (x == 0) {
+            if (ticks == 80) {
                 fifo_size = 0;
                 fifo = 0;
             }
@@ -50,14 +53,14 @@ void PPU::tick() {
         break;
         case OAM_SEARCH:
             // TODO: Implement objects ("sprites")
-            if (ticks == 80) {
+            if (ticks == 79) {
                 x = 0;
                 STAT = (STAT & ~2) | PIXEL_TRANSFER;
             }
         break;
         case HBLANK:
         // Switch to VBLANK if LY=144 and scanline is done
-        if (ticks == 456){ // At end of scanline
+        if (ticks == 455){ // At end of scanline
             ticks = 0;
             LY++;
             if (LY == 144) { // Visible `lines` done, switch to vblank
@@ -70,7 +73,7 @@ void PPU::tick() {
         break;
         case VBLANK:
         // Switch to OAM_SEARCH if LY=153, end of VBLANK
-        if (ticks == 456) {
+        if (ticks == 455) {
             ticks = 0;
             LY++;
             if (LY == 153) { // Jump back to top
@@ -81,6 +84,7 @@ void PPU::tick() {
         break;
     }
     ticks++;
+    ticks %= 456;
 }
 
 void PPU::fetch() {
@@ -98,7 +102,7 @@ void PPU::fetch() {
 }
 
 void inline PPU::push_pixel() {
-    buffer[LY * 160 + x] = ((fifo & (0b11 << 30)) >> 30);
+    buffer[LY * 160 + x] = fifo >> 30;
     fifo <<= 2;
     fifo_size--;
 }

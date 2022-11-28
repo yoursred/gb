@@ -12,7 +12,7 @@ class CPU {
     Memory& memory;
 
     CPU(Memory& memory);
-    byte* mem_at(word* address); byte* mem_at(word address);
+    // byte* mem_at(word* address); byte* mem_at(word address);
 
     byte opcode = 0;
     byte working_byte = 0;
@@ -26,6 +26,7 @@ class CPU {
     
 
     byte fetch_instruction();
+    void prefetch();
     void step();
     void decode();
     void decode_prefixed();
@@ -95,14 +96,15 @@ class CPU {
     // --SECTION-- JUMPS
     void CALL(word address);
     void CALLC(byte cc, word address);
-    void JR (MP offset);
-    void JRC(byte cc, MP offset);
-    void JP (word address);
+    void JR  (sbyte offset);
+    void JRC (byte cc, sbyte offset);
+    void JP  (word address);
+    void JPHL(void);
     void JPC (byte cc, word address);
-    void RET(void);
+    void RET (void);
     void RETC(byte cc);
-    void RETI();
-    void RST(byte vector);
+    void RETI(void);
+    void RST (byte vector);
     
     // --SECTION-- STACK
     void PUSH(word *src);

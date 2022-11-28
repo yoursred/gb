@@ -8,7 +8,7 @@ void CPU::decode_prefixed() {
         case (0x03): CPU::RLC(R.e); break;
         case (0x04): CPU::RLC(R.h); break;
         case (0x05): CPU::RLC(R.l); break;
-        case (0x06): CPU::RLC(mem_at(R.hl)); break;
+        case (0x06): CPU::RLC(memory[R.hl]); break;
         case (0x07): CPU::RLC(R.a); break;
         case (0x08): CPU::RRC(R.b); break;
         case (0x09): CPU::RRC(R.c); break;
@@ -16,7 +16,7 @@ void CPU::decode_prefixed() {
         case (0x0b): CPU::RRC(R.e); break;
         case (0x0c): CPU::RRC(R.h); break;
         case (0x0d): CPU::RRC(R.l); break;
-        case (0x0e): CPU::RRC(mem_at(R.hl)); break;
+        case (0x0e): CPU::RRC(memory[R.hl]); break;
         case (0x0f): CPU::RRC(R.a); break;
         case (0x10): CPU::RL(R.b); break;
         case (0x11): CPU::RL(R.c); break;
@@ -24,7 +24,7 @@ void CPU::decode_prefixed() {
         case (0x13): CPU::RL(R.e); break;
         case (0x14): CPU::RL(R.h); break;
         case (0x15): CPU::RL(R.l); break;
-        case (0x16): CPU::RL(mem_at(R.hl)); break;
+        case (0x16): CPU::RL(memory[R.hl]); break;
         case (0x17): CPU::RL(R.a); break;
         case (0x18): CPU::RR(R.b); break;
         case (0x19): CPU::RR(R.c); break;
@@ -32,7 +32,7 @@ void CPU::decode_prefixed() {
         case (0x1b): CPU::RR(R.e); break;
         case (0x1c): CPU::RR(R.h); break;
         case (0x1d): CPU::RR(R.l); break;
-        case (0x1e): CPU::RR(mem_at(R.hl)); break;
+        case (0x1e): CPU::RR(memory[R.hl]); break;
         case (0x1f): CPU::RR(R.a); break;
         case (0x20): CPU::SLA(R.b); break;
         case (0x21): CPU::SLA(R.c); break;
@@ -40,7 +40,7 @@ void CPU::decode_prefixed() {
         case (0x23): CPU::SLA(R.e); break;
         case (0x24): CPU::SLA(R.h); break;
         case (0x25): CPU::SLA(R.l); break;
-        case (0x26): CPU::SLA(mem_at(R.hl)); break;
+        case (0x26): CPU::SLA(memory[R.hl]); break;
         case (0x27): CPU::SLA(R.a); break;
         case (0x28): CPU::SRA(R.b); break;
         case (0x29): CPU::SRA(R.c); break;
@@ -48,7 +48,7 @@ void CPU::decode_prefixed() {
         case (0x2b): CPU::SRA(R.e); break;
         case (0x2c): CPU::SRA(R.h); break;
         case (0x2d): CPU::SRA(R.l); break;
-        case (0x2e): CPU::SRA(mem_at(R.hl)); break;
+        case (0x2e): CPU::SRA(memory[R.hl]); break;
         case (0x2f): CPU::SRA(R.a); break;
         case (0x30): CPU::SWAP(R.b); break;
         case (0x31): CPU::SWAP(R.c); break;
@@ -56,7 +56,7 @@ void CPU::decode_prefixed() {
         case (0x33): CPU::SWAP(R.e); break;
         case (0x34): CPU::SWAP(R.h); break;
         case (0x35): CPU::SWAP(R.l); break;
-        case (0x36): CPU::SWAP(mem_at(R.hl)); break;
+        case (0x36): CPU::SWAP(memory[R.hl]); break;
         case (0x37): CPU::SWAP(R.a); break;
         case (0x38): CPU::SRL(R.b); break;
         case (0x39): CPU::SRL(R.c); break;
@@ -64,7 +64,7 @@ void CPU::decode_prefixed() {
         case (0x3b): CPU::SRL(R.e); break;
         case (0x3c): CPU::SRL(R.h); break;
         case (0x3d): CPU::SRL(R.l); break;
-        case (0x3e): CPU::SRL(mem_at(R.hl)); break;
+        case (0x3e): CPU::SRL(memory[R.hl]); break;
         case (0x3f): CPU::SRL(R.a); break;
         case (0x40): CPU::BIT(0, R.b); break;
         case (0x41): CPU::BIT(0, R.c); break;
@@ -72,7 +72,7 @@ void CPU::decode_prefixed() {
         case (0x43): CPU::BIT(0, R.e); break;
         case (0x44): CPU::BIT(0, R.h); break;
         case (0x45): CPU::BIT(0, R.l); break;
-        case (0x46): CPU::BIT(0, mem_at(R.hl)); break;
+        case (0x46): CPU::BIT(0, memory[R.hl]); break;
         case (0x47): CPU::BIT(0, R.a); break;
         case (0x48): CPU::BIT(1, R.b); break;
         case (0x49): CPU::BIT(1, R.c); break;
@@ -80,7 +80,7 @@ void CPU::decode_prefixed() {
         case (0x4b): CPU::BIT(1, R.e); break;
         case (0x4c): CPU::BIT(1, R.h); break;
         case (0x4d): CPU::BIT(1, R.l); break;
-        case (0x4e): CPU::BIT(1, mem_at(R.hl)); break;
+        case (0x4e): CPU::BIT(1, memory[R.hl]); break;
         case (0x4f): CPU::BIT(1, R.a); break;
         case (0x50): CPU::BIT(2, R.b); break;
         case (0x51): CPU::BIT(2, R.c); break;
@@ -88,7 +88,7 @@ void CPU::decode_prefixed() {
         case (0x53): CPU::BIT(2, R.e); break;
         case (0x54): CPU::BIT(2, R.h); break;
         case (0x55): CPU::BIT(2, R.l); break;
-        case (0x56): CPU::BIT(2, mem_at(R.hl)); break;
+        case (0x56): CPU::BIT(2, memory[R.hl]); break;
         case (0x57): CPU::BIT(2, R.a); break;
         case (0x58): CPU::BIT(3, R.b); break;
         case (0x59): CPU::BIT(3, R.c); break;
@@ -96,7 +96,7 @@ void CPU::decode_prefixed() {
         case (0x5b): CPU::BIT(3, R.e); break;
         case (0x5c): CPU::BIT(3, R.h); break;
         case (0x5d): CPU::BIT(3, R.l); break;
-        case (0x5e): CPU::BIT(3, mem_at(R.hl)); break;
+        case (0x5e): CPU::BIT(3, memory[R.hl]); break;
         case (0x5f): CPU::BIT(3, R.a); break;
         case (0x60): CPU::BIT(4, R.b); break;
         case (0x61): CPU::BIT(4, R.c); break;
@@ -104,7 +104,7 @@ void CPU::decode_prefixed() {
         case (0x63): CPU::BIT(4, R.e); break;
         case (0x64): CPU::BIT(4, R.h); break;
         case (0x65): CPU::BIT(4, R.l); break;
-        case (0x66): CPU::BIT(4, mem_at(R.hl)); break;
+        case (0x66): CPU::BIT(4, memory[R.hl]); break;
         case (0x67): CPU::BIT(4, R.a); break;
         case (0x68): CPU::BIT(5, R.b); break;
         case (0x69): CPU::BIT(5, R.c); break;
@@ -112,7 +112,7 @@ void CPU::decode_prefixed() {
         case (0x6b): CPU::BIT(5, R.e); break;
         case (0x6c): CPU::BIT(5, R.h); break;
         case (0x6d): CPU::BIT(5, R.l); break;
-        case (0x6e): CPU::BIT(5, mem_at(R.hl)); break;
+        case (0x6e): CPU::BIT(5, memory[R.hl]); break;
         case (0x6f): CPU::BIT(5, R.a); break;
         case (0x70): CPU::BIT(6, R.b); break;
         case (0x71): CPU::BIT(6, R.c); break;
@@ -120,7 +120,7 @@ void CPU::decode_prefixed() {
         case (0x73): CPU::BIT(6, R.e); break;
         case (0x74): CPU::BIT(6, R.h); break;
         case (0x75): CPU::BIT(6, R.l); break;
-        case (0x76): CPU::BIT(6, mem_at(R.hl)); break;
+        case (0x76): CPU::BIT(6, memory[R.hl]); break;
         case (0x77): CPU::BIT(6, R.a); break;
         case (0x78): CPU::BIT(7, R.b); break;
         case (0x79): CPU::BIT(7, R.c); break;
@@ -128,7 +128,7 @@ void CPU::decode_prefixed() {
         case (0x7b): CPU::BIT(7, R.e); break;
         case (0x7c): CPU::BIT(7, R.h); break;
         case (0x7d): CPU::BIT(7, R.l); break;
-        case (0x7e): CPU::BIT(7, mem_at(R.hl)); break;
+        case (0x7e): CPU::BIT(7, memory[R.hl]); break;
         case (0x7f): CPU::BIT(7, R.a); break;
         case (0x80): CPU::RES(0, R.b); break;
         case (0x81): CPU::RES(0, R.c); break;
@@ -136,7 +136,7 @@ void CPU::decode_prefixed() {
         case (0x83): CPU::RES(0, R.e); break;
         case (0x84): CPU::RES(0, R.h); break;
         case (0x85): CPU::RES(0, R.l); break;
-        case (0x86): CPU::RES(0, mem_at(R.hl)); break;
+        case (0x86): CPU::RES(0, memory[R.hl]); break;
         case (0x87): CPU::RES(0, R.a); break;
         case (0x88): CPU::RES(1, R.b); break;
         case (0x89): CPU::RES(1, R.c); break;
@@ -144,7 +144,7 @@ void CPU::decode_prefixed() {
         case (0x8b): CPU::RES(1, R.e); break;
         case (0x8c): CPU::RES(1, R.h); break;
         case (0x8d): CPU::RES(1, R.l); break;
-        case (0x8e): CPU::RES(1, mem_at(R.hl)); break;
+        case (0x8e): CPU::RES(1, memory[R.hl]); break;
         case (0x8f): CPU::RES(1, R.a); break;
         case (0x90): CPU::RES(2, R.b); break;
         case (0x91): CPU::RES(2, R.c); break;
@@ -152,7 +152,7 @@ void CPU::decode_prefixed() {
         case (0x93): CPU::RES(2, R.e); break;
         case (0x94): CPU::RES(2, R.h); break;
         case (0x95): CPU::RES(2, R.l); break;
-        case (0x96): CPU::RES(2, mem_at(R.hl)); break;
+        case (0x96): CPU::RES(2, memory[R.hl]); break;
         case (0x97): CPU::RES(2, R.a); break;
         case (0x98): CPU::RES(3, R.b); break;
         case (0x99): CPU::RES(3, R.c); break;
@@ -160,7 +160,7 @@ void CPU::decode_prefixed() {
         case (0x9b): CPU::RES(3, R.e); break;
         case (0x9c): CPU::RES(3, R.h); break;
         case (0x9d): CPU::RES(3, R.l); break;
-        case (0x9e): CPU::RES(3, mem_at(R.hl)); break;
+        case (0x9e): CPU::RES(3, memory[R.hl]); break;
         case (0x9f): CPU::RES(3, R.a); break;
         case (0xa0): CPU::RES(4, R.b); break;
         case (0xa1): CPU::RES(4, R.c); break;
@@ -168,7 +168,7 @@ void CPU::decode_prefixed() {
         case (0xa3): CPU::RES(4, R.e); break;
         case (0xa4): CPU::RES(4, R.h); break;
         case (0xa5): CPU::RES(4, R.l); break;
-        case (0xa6): CPU::RES(4, mem_at(R.hl)); break;
+        case (0xa6): CPU::RES(4, memory[R.hl]); break;
         case (0xa7): CPU::RES(4, R.a); break;
         case (0xa8): CPU::RES(5, R.b); break;
         case (0xa9): CPU::RES(5, R.c); break;
@@ -176,7 +176,7 @@ void CPU::decode_prefixed() {
         case (0xab): CPU::RES(5, R.e); break;
         case (0xac): CPU::RES(5, R.h); break;
         case (0xad): CPU::RES(5, R.l); break;
-        case (0xae): CPU::RES(5, mem_at(R.hl)); break;
+        case (0xae): CPU::RES(5, memory[R.hl]); break;
         case (0xaf): CPU::RES(5, R.a); break;
         case (0xb0): CPU::RES(6, R.b); break;
         case (0xb1): CPU::RES(6, R.c); break;
@@ -184,7 +184,7 @@ void CPU::decode_prefixed() {
         case (0xb3): CPU::RES(6, R.e); break;
         case (0xb4): CPU::RES(6, R.h); break;
         case (0xb5): CPU::RES(6, R.l); break;
-        case (0xb6): CPU::RES(6, mem_at(R.hl)); break;
+        case (0xb6): CPU::RES(6, memory[R.hl]); break;
         case (0xb7): CPU::RES(6, R.a); break;
         case (0xb8): CPU::RES(7, R.b); break;
         case (0xb9): CPU::RES(7, R.c); break;
@@ -192,7 +192,7 @@ void CPU::decode_prefixed() {
         case (0xbb): CPU::RES(7, R.e); break;
         case (0xbc): CPU::RES(7, R.h); break;
         case (0xbd): CPU::RES(7, R.l); break;
-        case (0xbe): CPU::RES(7, mem_at(R.hl)); break;
+        case (0xbe): CPU::RES(7, memory[R.hl]); break;
         case (0xbf): CPU::RES(7, R.a); break;
         case (0xc0): CPU::SET(0, R.b); break;
         case (0xc1): CPU::SET(0, R.c); break;
@@ -200,7 +200,7 @@ void CPU::decode_prefixed() {
         case (0xc3): CPU::SET(0, R.e); break;
         case (0xc4): CPU::SET(0, R.h); break;
         case (0xc5): CPU::SET(0, R.l); break;
-        case (0xc6): CPU::SET(0, mem_at(R.hl)); break;
+        case (0xc6): CPU::SET(0, memory[R.hl]); break;
         case (0xc7): CPU::SET(0, R.a); break;
         case (0xc8): CPU::SET(1, R.b); break;
         case (0xc9): CPU::SET(1, R.c); break;
@@ -208,7 +208,7 @@ void CPU::decode_prefixed() {
         case (0xcb): CPU::SET(1, R.e); break;
         case (0xcc): CPU::SET(1, R.h); break;
         case (0xcd): CPU::SET(1, R.l); break;
-        case (0xce): CPU::SET(1, mem_at(R.hl)); break;
+        case (0xce): CPU::SET(1, memory[R.hl]); break;
         case (0xcf): CPU::SET(1, R.a); break;
         case (0xd0): CPU::SET(2, R.b); break;
         case (0xd1): CPU::SET(2, R.c); break;
@@ -216,7 +216,7 @@ void CPU::decode_prefixed() {
         case (0xd3): CPU::SET(2, R.e); break;
         case (0xd4): CPU::SET(2, R.h); break;
         case (0xd5): CPU::SET(2, R.l); break;
-        case (0xd6): CPU::SET(2, mem_at(R.hl)); break;
+        case (0xd6): CPU::SET(2, memory[R.hl]); break;
         case (0xd7): CPU::SET(2, R.a); break;
         case (0xd8): CPU::SET(3, R.b); break;
         case (0xd9): CPU::SET(3, R.c); break;
@@ -224,7 +224,7 @@ void CPU::decode_prefixed() {
         case (0xdb): CPU::SET(3, R.e); break;
         case (0xdc): CPU::SET(3, R.h); break;
         case (0xdd): CPU::SET(3, R.l); break;
-        case (0xde): CPU::SET(3, mem_at(R.hl)); break;
+        case (0xde): CPU::SET(3, memory[R.hl]); break;
         case (0xdf): CPU::SET(3, R.a); break;
         case (0xe0): CPU::SET(4, R.b); break;
         case (0xe1): CPU::SET(4, R.c); break;
@@ -232,7 +232,7 @@ void CPU::decode_prefixed() {
         case (0xe3): CPU::SET(4, R.e); break;
         case (0xe4): CPU::SET(4, R.h); break;
         case (0xe5): CPU::SET(4, R.l); break;
-        case (0xe6): CPU::SET(4, mem_at(R.hl)); break;
+        case (0xe6): CPU::SET(4, memory[R.hl]); break;
         case (0xe7): CPU::SET(4, R.a); break;
         case (0xe8): CPU::SET(5, R.b); break;
         case (0xe9): CPU::SET(5, R.c); break;
@@ -240,7 +240,7 @@ void CPU::decode_prefixed() {
         case (0xeb): CPU::SET(5, R.e); break;
         case (0xec): CPU::SET(5, R.h); break;
         case (0xed): CPU::SET(5, R.l); break;
-        case (0xee): CPU::SET(5, mem_at(R.hl)); break;
+        case (0xee): CPU::SET(5, memory[R.hl]); break;
         case (0xef): CPU::SET(5, R.a); break;
         case (0xf0): CPU::SET(6, R.b); break;
         case (0xf1): CPU::SET(6, R.c); break;
@@ -248,7 +248,7 @@ void CPU::decode_prefixed() {
         case (0xf3): CPU::SET(6, R.e); break;
         case (0xf4): CPU::SET(6, R.h); break;
         case (0xf5): CPU::SET(6, R.l); break;
-        case (0xf6): CPU::SET(6, mem_at(R.hl)); break;
+        case (0xf6): CPU::SET(6, memory[R.hl]); break;
         case (0xf7): CPU::SET(6, R.a); break;
         case (0xf8): CPU::SET(7, R.b); break;
         case (0xf9): CPU::SET(7, R.c); break;
@@ -256,7 +256,7 @@ void CPU::decode_prefixed() {
         case (0xfb): CPU::SET(7, R.e); break;
         case (0xfc): CPU::SET(7, R.h); break;
         case (0xfd): CPU::SET(7, R.l); break;
-        case (0xfe): CPU::SET(7, mem_at(R.hl)); break;
+        case (0xfe): CPU::SET(7, memory[R.hl]); break;
         case (0xff): CPU::SET(7, R.a); break;
     }
 }

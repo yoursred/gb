@@ -14,14 +14,20 @@ CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11
 
 $(shell mkdir -p build/cpu build/ppu)
 
-build/gb: build/main.o build/cpu/*.o build/memory/*.o build/ppu/*.o
-	$(GPP) $(CXXFLAGS) $(BUILDDIR)/cpu/*.o $(BUILDDIR)/memory/*.o $(BUILDDIR)/main.o  -o $(BUILDDIR)/gb
+build/gb: build/main.o build/debugger/*.o build/cpu/*.o build/memory/*.o build/ppu/*.o
+	$(GPP) $(CXXFLAGS) $(BUILDDIR)/ppu/*.o $(BUILDDIR)/cpu/*.o $(BUILDDIR)/memory/*.o $(BUILDDIR)/debugger/*.o $(BUILDDIR)/main.o \
+	  -o $(BUILDDIR)/gb
 
 build/main.o: src/main.cpp
 	$(GPP) $(CXXFLAGS) -c src/main.cpp -o $(BUILDDIR)/main.o
 
 # build/ppu.o: build/ppu/*.o
 # 	ld -r $(BUILDDIR)/ppu/*.o -o $(BUILDDIR)/ppu.o -nostdlib
+
+build/debugger/*.o: src/debugger/*
+	mkdir -p build/debugger/
+	$(GPP) $(CXXFLAGS) -c src/debugger/*.cpp
+	mv *.o $(BUILDDIR)/debugger
 
 build/ppu/*.o: src/ppu/*
 	mkdir -p build/ppu/

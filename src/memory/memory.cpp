@@ -59,6 +59,13 @@ Memory::Memory(byte ROM[], unsigned int size) {
     memcpy(BANKS, ROM, size);
 }
 
+Memory::Memory(byte BOOTROM[]) {
+    mode = MODE_ROM;
+    rom_banks = 2;
+    ram_banks = 0;
+    memcpy(BANKS, BOOTROM, 0x100);
+}
+
 byte Memory::read(word address) {
     if (address < 0x4000) {
         return BANKS[address];
@@ -174,4 +181,8 @@ void Memory::write_regs(word address, byte value) {
 
 Memory::MemoryProxy Memory::operator[](const word value) {
     return Memory::MemoryProxy(this, value);
+}
+
+Memory::MemoryProxy Memory::operator[](const word* value) {
+    return Memory::MemoryProxy(this, *value);
 }

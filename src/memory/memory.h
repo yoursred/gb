@@ -61,6 +61,7 @@ class Memory {
 
 
     Memory(byte ROM[], unsigned int size);
+    Memory(byte BOOTROM[]);
 
     byte read(word address);
     void write(word address, byte value);
@@ -85,8 +86,8 @@ class Memory {
         public:
         Memory* parent;
         word address;
-        byte mode;
         byte* ptr;
+        byte mode;
 
         MemoryProxy(Memory* parent, word address) : parent(parent), address(address), mode(MEMORY_MAPPED) {};
         MemoryProxy(byte* ptr) : ptr(ptr), mode(DIRECT_POINTER) {};
@@ -99,23 +100,7 @@ class Memory {
                 return *ptr;
             }
         };
-        operator sbyte() const {
-            if (mode == MEMORY_MAPPED) {
-                return parent->read(address);
-            }
-            else {
-                return *ptr;
-            }
-        };
-        operator word() const {
-            if (mode == MEMORY_MAPPED) {
-                return parent->read(address);
-            }
-            else {
-                return *ptr;
-            }
-        };
-        // operator int() const;
+        
 
         void operator =(byte const& value) {
             if (mode == MEMORY_MAPPED) {
@@ -125,9 +110,16 @@ class Memory {
                 *ptr = value;
             }
         };
+
+        // void operator --(void) {
+        // I am not doing this, what is wrong with x = x - 1?
+        // }
     };
 
     MemoryProxy operator[](const word value);
+    MemoryProxy operator[](const word* value);
+
+    // byte raw(word address);
 };
 
 typedef Memory::MemoryProxy MP;

@@ -1,3 +1,6 @@
+#ifndef __PPU_H
+#define __PPU_H
+
 #include "include.h"
 #include "memory/memory.h"
 #include <cstdint>
@@ -22,6 +25,7 @@ typedef uint32_t FIFO;
 
 
 class PPU {
+    public:
     byte &LCDC, &STAT, &SCY, &SCX, &LY, &LYC, 
          &DMA, &BGP, &OBP0, &OBP1, &WY, &WX;
     byte* VRAM;
@@ -57,3 +61,4 @@ class PPU {
 
 
 word unfuck_tile_data(word x);
+#endif
