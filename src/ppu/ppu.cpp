@@ -1,4 +1,6 @@
 #include "ppu/ppu.h"
+#include <iostream>
+#include <iomanip>
 
 
 PPU::PPU(Memory& mem):
@@ -105,6 +107,22 @@ void inline PPU::push_pixel() {
     buffer[LY * 160 + x] = fifo >> 30;
     fifo <<= 2;
     fifo_size--;
+}
+
+void PPU::print_ppu_registers() {
+    PRINT_PPU_REG(LCDC)
+    PRINT_PPU_REG(STAT)
+    PRINT_PPU_REG(SCY)
+    PRINT_PPU_REG(SCX)
+    PRINT_PPU_REG(LY)
+    PRINT_PPU_REG(LYC)
+    PRINT_PPU_REG(x)
+    PRINT_PPU_REG(DMA)
+    PRINT_PPU_REG(BGP)
+    PRINT_PPU_REG(OBP0)
+    PRINT_PPU_REG(OBP1)
+    PRINT_PPU_REG(WY)
+    PRINT_PPU_REG(WX)
 }
 
 

@@ -1,9 +1,12 @@
 - [x] Instruction fetching from opcode
 - [x] 0xCB prefixed instruction fetching
 - [x] Cycle counting
-- [ ] Documentation and useful comments
+- [x] Create a separate memory class that allows bank switching and a more accurate databus
+- [ ] Finish debugger (WIP)
+- [ ] Graphics (WIP)
+- [ ] Raw `Memory` read and write functions for debugging
+- [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects
+- [ ] Control execution speed
+- [ ] Documentation and useful comments (there are comments of dubious value all over)
 - [ ] Touch up python tools to always generate usable code
-- [ ] Create a separate memory class that allows bank switching and a more accurate databus 
-- [ ] Graphics
-- [ ] Explore C++'s reference feature
 - [ ] Add unit tests

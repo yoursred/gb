@@ -12,9 +12,17 @@
 #define MODE_BATTERY 32
 #define MODE_TIMER 64
 
+#define ASSIGNMENT_DECLARE(op) void operator op## =(byte const& value);
+
+
+
 // TODO: Figure out a better name
 #define MEMORY_MAPPED 0
 #define DIRECT_POINTER 1
+#define CPU_REGISTER 2
+
+#define R_LO 0
+#define R_HI 1
 
 
 /*  Start	End     Description         	        Notes
@@ -45,7 +53,6 @@ class Memory {
     byte IE;
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;
-    // TODO: clean up above code to look nicer
 
     word rom_bank = 0;
     byte ram_bank = 0;
@@ -89,30 +96,36 @@ class Memory {
         byte* ptr;
         byte mode;
 
-        MemoryProxy(Memory* parent, word address) : parent(parent), address(address), mode(MEMORY_MAPPED) {};
-        MemoryProxy(byte* ptr) : ptr(ptr), mode(DIRECT_POINTER) {};
+        word* ptr16;
+        byte hilo;
 
-        operator byte() const {
-            if (mode == MEMORY_MAPPED) {
-                return parent->read(address);
-            }
-            else {
-                return *ptr;
-            }
-        };
+        MemoryProxy(Memory* parent, word address);
+        MemoryProxy(byte* ptr);
+        MemoryProxy(word& ptr16, byte hilo);
+
+        byte read() const;
+        void write(byte value);
+
+        operator byte() const;
+        
+        MemoryProxy& operator ++(); // prefix
+        MemoryProxy& operator --(); // prefix
+        byte operator ++(int); // prefix
+        byte operator --(int); // prefix
         
 
-        void operator =(byte const& value) {
-            if (mode == MEMORY_MAPPED) {
-                parent->write(address, value);
-            }
-            else {
-                *ptr = value;
-            }
-        };
+        MemoryProxy& operator =(const byte& value);
+        MemoryProxy& operator =(const MemoryProxy& value);
+
+        ASSIGNMENT_DECLARE(+)
+        ASSIGNMENT_DECLARE(-)
+        ASSIGNMENT_DECLARE(&)
+        ASSIGNMENT_DECLARE(|)
+        ASSIGNMENT_DECLARE(^)
 
         // void operator --(void) {
         // I am not doing this, what is wrong with x = x - 1?
+        // Future me: I'm doing it, aren't I?
         // }
     };
 

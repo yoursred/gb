@@ -1,7 +1,7 @@
 #include "cpu/cpu.h"
 #include "memory/memory.h"
 #include "ppu/ppu.h"
-#include "debugger/dbg.h"
+#include "debugger/debug.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -22,8 +22,9 @@ int main(void) {
 
     Memory cart = Memory(bootrom);
     CPU cpu(cart);
+    PPU ppu(cart);
 
-    dbg_main(cart, cpu);
+    dbg_main(cart, cpu, ppu);
 
     // dumphex(cart, 2, 0x100);
 
@@ -32,9 +33,9 @@ int main(void) {
     // int i;
     // while (cpu.cycles < 4194304U * 1000U) {
     //     cpu.step();
-    //     for (i = 0; i < cpu.current_cycles; i++) {
-    //         ppu.tick();
-    //     }
+        // for (i = 0; i < cpu.current_cycles; i++) {
+        //     ppu.tick();
+        // }
     // }
     // cpu.R.print_regs();
     // std::ofstream fb ("fb.bin", std::ios::binary);

@@ -67,6 +67,7 @@ Memory::Memory(byte BOOTROM[]) {
 }
 
 byte Memory::read(word address) {
+    address &= 0xFFFF;
     if (address < 0x4000) {
         return BANKS[address];
     }
@@ -94,6 +95,7 @@ byte Memory::read(word address) {
 }
 
 void Memory::write(word address, byte value) {
+    address &= 0xFFFF;
     if (address < 0x8000) {
         write_regs(address, value);
     }

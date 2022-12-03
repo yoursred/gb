@@ -5,6 +5,15 @@
 #include "memory/memory.h"
 
 
+#define R_A MP(R.af, R_HI)
+#define R_B MP(R.bc, R_HI)
+#define R_C MP(R.bc, R_LO)
+#define R_D MP(R.de, R_HI)
+#define R_E MP(R.de, R_LO)
+#define R_H MP(R.hl, R_HI)
+#define R_L MP(R.hl, R_LO)
+
+
 class CPU {
     public:
     // Registers registers;
@@ -26,15 +35,15 @@ class CPU {
     
 
     byte fetch_instruction();
-    void prefetch();
+    byte prefetch();
     void step();
     void decode();
     void decode_prefixed();
 
     class Registers {
         public:
-        word *af, *bc, *de, *hl, *sp, *pc;
-        byte *a, *f, *b, *c, *d, *e, *h, *l;
+        word af, bc, de, hl, sp, pc;
+        // byte *a, *f, *b, *c, *d, *e, *h, *l;
 
         Registers(void);
 
@@ -51,15 +60,17 @@ class CPU {
 
     Registers R;
 
+
+
     private:
     
     // --SECTION-- ARITHMETIC
     void ADC(MP src);
-    void ADD(MP src); void ADD(word *src); void ADD_SP(sbyte *src);
+    void ADD(MP src); void ADD(word& src); void ADD_SP(sbyte *src);
     void AND(MP src);
     void CP (MP src);
-    void DEC(MP dst); void DEC(word *dst);
-    void INC(MP dst); void INC(word *dst);
+    void DEC(MP dst); void DEC(word& dst);
+    void INC(MP dst); void INC(word& dst);
     void OR (MP src);
     void SBC(MP src);
     void SUB(MP src);
@@ -86,7 +97,7 @@ class CPU {
 
     // --SECTION-- LOAD
     void LD (MP dst, MP src);
-    void LD (word *dst, word *src);
+    void LD (word& dst, word& src);
     void LD16SP(word dst);
     void LDI(MP dst, MP src);
     void LDD(MP dst, MP src);
@@ -107,8 +118,8 @@ class CPU {
     void RST (byte vector);
     
     // --SECTION-- STACK
-    void PUSH(word *src);
-    void POP(word *dst);
+    void PUSH(word& src);
+    void POP(word& dst);
 
     // --SECTION-- MISC
     void CCF(void);

@@ -14,8 +14,14 @@ typedef unsigned char byte;
 typedef signed char sbyte;
 typedef unsigned short word;
 
-#define NB (byte*) malloc(sizeof(byte))
-#define NW (word*) malloc(sizeof(word))
+
+
+#define COUT_HEX_WORD_DS(x) "$" << std::setfill('0') << std::setw(4) << std::hex << x
+#define COUT_HEX_WORD(x) std::setfill('0') << std::setw(4) << std::hex << x
+#define COUT_HEX_BYTE_DS(x) "$" << std::setfill('0') << std::setw(2) << std::hex << (word) x
+#define COUT_HEX_BYTE(x) std::setfill('0') << std::setw(2) << std::hex << (word) x
+
+
 
 
 

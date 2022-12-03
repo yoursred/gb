@@ -5,19 +5,16 @@
 #include "cpu/cpu.h"
 
 CPU::Registers::Registers(void) {
-    af = NW; bc = NW; de = NW;
-    hl = NW; sp = NW; pc = NW;
+    // Replicating DMG behaviour
+    af = 0x180; bc = 0x13; de = 0xD8;
+    hl = 0x14d; sp = 0xFFFE; pc = 0;
 
-    f = (byte*) af; a = f + 1;
-    c = (byte*) bc; b = c + 1;
-    e = (byte*) de; d = e + 1;
-    l = (byte*) hl; h = l + 1;
-    // CPU::mem;
+    // set_flags("1000");
 }
 
 void CPU::Registers::print_regs(void) {
     printf("AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x PC=%04x\n",
-        *af, *bc, *de, *hl, *sp, *pc);
+        af, bc, de, hl, sp, pc);
 }
 
 void CPU::Registers::print_flags(void) {
@@ -26,28 +23,28 @@ void CPU::Registers::print_flags(void) {
 }
 
 void CPU::Registers::set_flag(byte flag) {
-    *f |= flag;
+    af |= flag;
 }
 
 void CPU::Registers::unset_flag(byte flag) {
-    *f &= ~(flag);
+    af &= ~((word) flag);
 }
 
 void CPU::Registers::update_flag(byte flag, word value) {
     if (value) {
-        *f |= flag;
+        af |= flag;
     }
     else {
-        *f &= ~(flag);
+        af &= ~(flag);
     }
 }
 
 void CPU::Registers::flip_flag(byte flag) {
-    *f ^= flag;
+    af ^= flag;
 }
 
 int CPU::Registers::get_flag(byte flag) {
-    return !!(*f & flag);
+    return !!(af & flag);
 }
 
 int CPU::Registers::get_cc(byte cc) {

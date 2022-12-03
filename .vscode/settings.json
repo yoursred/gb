@@ -81,7 +81,9 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "filesystem": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "map": "cpp",
+        "regex": "cpp"
     },
     "makefile.launchConfigurations": [
         {

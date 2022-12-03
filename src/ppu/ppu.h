@@ -11,6 +11,7 @@ typedef uint32_t FIFO;
 #define T(ID, ROW) ID * 16 + (ROW % 8) * 2
 // #define SHIFT_OUT(x, n) 
 // #define GET_WORD(SRC, ADDRESS) ((SRC[ADDRESS] << 8) | SRC[ADDRESS + 1])
+#define PRINT_PPU_REG(reg) std::cout << #reg << "=" << COUT_HEX_BYTE_DS(reg) << std::endl;
 
 
 #define HBLANK 0
@@ -52,6 +53,8 @@ class PPU {
 
     void tick();
     void fetch();
+
+    void print_ppu_registers();
     
     
     void inline push_pixel();
