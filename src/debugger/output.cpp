@@ -15,37 +15,38 @@ const std::regex r_s8 ("e8");
 
 
 
-void print_instruction(CPU& cpu) {
+std::string print_instruction(CPU& cpu) {
     byte l = cpu.prefetch();
     const byte& x = cpu.working_byte;
 
     std::string out;
+    std::stringstream ss;
     std::stringstream r;
 
     if (cpu.opcode == 0xCB) { // 0xCB instructions do not need any replacement
-        std::cout << instructions[0x100 + x];
+        return instructions[0x100 + x];
     }
     else {
         out = instructions[cpu.opcode];
         if (l == 3) {
             r << COUT_HEX_WORD_DS(cpu.working_word);
-            std::cout << std::regex_replace(out, r_u16, r.str()) << std::endl;
-            return;
+            ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
+            return ss.str();
         } 
         if (l == 2) {
             if (std::regex_match(out, r_u8)) {
                 r << COUT_HEX_BYTE_DS(x);
-                std::cout << std::regex_replace(out, r_u16, r.str()) << std::endl;
-                return;
+                ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
+                return ss.str();
             }
             else if (std::regex_match(out, r_s8)) {
                 r << (x == 0 ? " " : (x > 127 ? "-" : "+"));
                 r << COUT_HEX_BYTE_DS(x);
-                std::cout << std::regex_replace(out, r_u16, r.str()) << std::endl;
-                return;
+                ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
+                return ss.str();
             }
         }
-        std::cout << out;
+        return out;
     }
 }
 

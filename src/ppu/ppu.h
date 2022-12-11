@@ -4,6 +4,7 @@
 #include "include.h"
 #include "memory/memory.h"
 #include <cstdint>
+#include <string>
 
 typedef uint32_t FIFO;
 
@@ -55,6 +56,7 @@ class PPU {
     void fetch();
 
     void print_ppu_registers();
+    std::string str();
     
     
     void inline push_pixel();

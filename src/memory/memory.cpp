@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string.h>
 #include "memory/memory.h"
+#include "cpu/cpu.h"
 
 Memory::Memory(byte ROM[], unsigned int size) {
     // prox = MemoryProxy();
@@ -26,12 +27,13 @@ Memory::Memory(byte ROM[], unsigned int size) {
         case (0x1B):
         case (0x1E): mode = MODE_MBC5 | MODE_RAM | MODE_BATTERY; break;
         default: 
-            std::cerr << "Scheisse! I don't know what that is!" << std::endl;
+            std::cerr << "ROM type error" << std::endl;
             exit(-1);
     }
 
     if (ROM[0x148] > 8) { // ROM size
-        std::cerr << "Scheisse! I don't know what that is!" << std::endl;
+        std::cerr << "ROM bank count error" << std::endl;
+        std::cerr << "Got " << (int) ROM[0x147] << ", expected < 8" << std::endl;
         exit(-1);
     }
     rom_banks = 2 * (1 << ROM[0x148]);
@@ -43,7 +45,7 @@ Memory::Memory(byte ROM[], unsigned int size) {
         case (4): ram_banks = 16; break; // Nintendo!
         case (5): ram_banks =  8; break; // Why?
         default:
-            std::cerr << "Scheisse! I don't know what that is!" << std::endl;
+            std::cerr << "RAM bank count error" << std::endl;
             exit(-1);
     }
     if (!(mode & MODE_MBC5)) {
@@ -51,7 +53,7 @@ Memory::Memory(byte ROM[], unsigned int size) {
     }
 
     if (size > (0x4000 * rom_banks)) {
-        std::cerr << "Scheisse! I don't know what that is!" << std::endl;
+        std::cerr << "ROM size error" << std::endl;
         exit(-1);
     }
 
@@ -68,6 +70,10 @@ Memory::Memory(byte BOOTROM[]) {
 
 byte Memory::read(word address) {
     address &= 0xFFFF;
+    // return Memory::MBC1_read(address);
+    if (address == 0xFF44) {
+        return 0x90;
+    }
     if (address < 0x4000) {
         return BANKS[address];
     }
@@ -119,6 +125,17 @@ void Memory::write(word address, byte value) {
         HRAM[address - 0xFF80] = value;
     else
         IE = value;
+    
+    mem_writes.push_back(mem_write(cpu_steps, address, value));
+
+    if (address == 0xFF02 && value == 0x81) { // Basic serial output
+        std::cout << (char) IO_R[01];
+        // fflush(stdout);
+    }
+    if (address == 0xFF04) {
+        cpu->div_timer = 0;
+        IO_R[04] = 0;
+    }
 }
 
 void Memory::write_regs(word address, byte value) {

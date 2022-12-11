@@ -15,7 +15,7 @@
 #define STR_RWATCH(r) if (rs == #r) {watch = r;}
 
 // Output functions
-void print_instruction(CPU& cpu);
+std::string print_instruction(CPU& cpu);
 void dumphex(Memory& data, word start, word len);
 
 

@@ -10,16 +10,17 @@
 #define CC_C 0x4
 #define CC_NC 0x8
 
+
+// TODO: specify size
 typedef unsigned char byte;
 typedef signed char sbyte;
 typedef unsigned short word;
-
-
+typedef signed short sword;
 
 #define COUT_HEX_WORD_DS(x) "$" << std::setfill('0') << std::setw(4) << std::hex << x
-#define COUT_HEX_WORD(x) std::setfill('0') << std::setw(4) << std::hex << x
+#define COUT_HEX_WORD(x) std::uppercase << std::setfill('0') << std::setw(4) << std::hex << x
 #define COUT_HEX_BYTE_DS(x) "$" << std::setfill('0') << std::setw(2) << std::hex << (word) x
-#define COUT_HEX_BYTE(x) std::setfill('0') << std::setw(2) << std::hex << (word) x
+#define COUT_HEX_BYTE(x) std::uppercase << std::setfill('0') << std::setw(2) << std::hex << (word) x
 
 
 

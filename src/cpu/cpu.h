@@ -3,9 +3,11 @@
 
 #include "include.h"
 #include "memory/memory.h"
+#include <string>
 
 
 #define R_A MP(R.af, R_HI)
+#define R_F MP(R.af, R_LO)
 #define R_B MP(R.bc, R_HI)
 #define R_C MP(R.bc, R_LO)
 #define R_D MP(R.de, R_HI)
@@ -13,6 +15,19 @@
 #define R_H MP(R.hl, R_HI)
 #define R_L MP(R.hl, R_LO)
 
+#define EI_0 1
+#define EI_1 2
+#define DI_0 4
+#define DI_1 8
+
+#define INT_VBLANK    1
+#define INT_LCD_STAT  2
+#define INT_TIMER     4
+#define INT_SERIAL    8
+#define INT_JOYPAD   16
+
+#define TAC_ENABLE 4
+#define TAC_CS 0b11
 
 class CPU {
     public:
@@ -27,11 +42,26 @@ class CPU {
     byte working_byte = 0;
     word working_word = 0;
     
-    bool is_halted = false;
-    word new_pc = 0;
+    word new_pc = 0x100;
     byte current_cycles = 0;
     unsigned long cycles = 0;
     unsigned long instructions = 0;
+
+    // Interrupt stuff
+    bool is_halted = false;
+    bool ime = false;
+    byte ime_buffer = 0;
+    byte &IF, &IE;
+
+    // Timer stuff
+    // TODO: Move to separate file/class
+    byte &DIV, &TIMA, &TMA, &TAC;
+    // word timer_timer = 0; // Yo dawg, I heard you liked timers so I put a timer on your timer
+    word div_timer = 0;
+    // size_t timer_debug = 0;
+    // size_t div_debug = 0;
+    bool last_div_bit = false;
+    bool tima_reload = false;
     
 
     byte fetch_instruction();
@@ -39,6 +69,14 @@ class CPU {
     void step();
     void decode();
     void decode_prefixed();
+
+    bool handle_interrupt();
+
+    void timer_tick();
+
+    #ifdef __GHOST_DEBUG
+    size_t memory_writes = 0;
+    #endif
 
     class Registers {
         public:
@@ -60,13 +98,13 @@ class CPU {
 
     Registers R;
 
-
+    std::string log();
 
     private:
     
     // --SECTION-- ARITHMETIC
     void ADC(MP src);
-    void ADD(MP src); void ADD(word& src); void ADD_SP(sbyte *src);
+    void ADD(MP src); void ADD(word& src); void ADD_SP(sbyte src);
     void AND(MP src);
     void CP (MP src);
     void DEC(MP dst); void DEC(word& dst);

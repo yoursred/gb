@@ -8,7 +8,7 @@ Breakpoint::Breakpoint(std::string rs, word value) {
     STR_RWATCH(af) STR_RWATCH(bc) STR_RWATCH(de) STR_RWATCH(hl)
     STR_RWATCH(a) STR_RWATCH(b) STR_RWATCH(c) STR_RWATCH(d)
     STR_RWATCH(e) STR_RWATCH(h) STR_RWATCH(l)
-    if (value >> 4) {
+    if ((int)watch >> 4) {
         value16 = value;
     } else {
         value8 = value;

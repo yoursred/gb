@@ -6,8 +6,8 @@
 
 CPU::Registers::Registers(void) {
     // Replicating DMG behaviour
-    af = 0x180; bc = 0x13; de = 0xD8;
-    hl = 0x14d; sp = 0xFFFE; pc = 0;
+    af = 0x1B0; bc = 0x13; de = 0xD8;
+    hl = 0x14d; sp = 0xFFFE; pc = 0x100;
 
     // set_flags("1000");
 }

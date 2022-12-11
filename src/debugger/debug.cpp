@@ -10,13 +10,14 @@
 #include "cpu/cpu.h"
 #include "ppu/ppu.h"
 
+
 void cpu_only_thread(CPU& cpu, byte& state, std::vector<Breakpoint>& breakpoints) {
     while (state != DBG_END) {
         if (state == DBG_RUNNING) {
             for (auto &&b : breakpoints) {
                 if (b.match(cpu)) {
                     state = DBG_PAUSED;
-                    std::cout << std::endl << "Paused execution @ PC=" << COUT_HEX_WORD_DS(b.value16) << std::endl;
+                    std::cout << std::endl << "Paused execution @ " << COUT_HEX_WORD_DS(b.str()) << std::endl;
                     print_instruction(cpu);
                 }
             }
@@ -33,8 +34,10 @@ void ppu_thread(CPU& cpu, PPU& ppu, byte& state, std::vector<Breakpoint>& breakp
             for (auto &&b : breakpoints) {
                 if (b.match(cpu)) {
                     state = DBG_PAUSED;
-                    std::cout << std::endl << "Paused execution @ PC=" << COUT_HEX_WORD_DS(b.value16) << std::endl;
-                    print_instruction(cpu);
+                    std::stringstream out;
+                    out << std::endl << "Paused execution @ PC=" << b.str() << std::endl;
+                    out << print_instruction(cpu);
+                    std::cout << out.str();
                 }
             }
             if (state == DBG_RUNNING) {
@@ -56,6 +59,7 @@ void dbg_main(Memory& mem, CPU& cpu, PPU& ppu) {
     std::string token;
     word x, y;
     int i;
+
 
     std::cout << "boygame debuger" << std::endl;
 

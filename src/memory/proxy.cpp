@@ -2,11 +2,13 @@
 #include <iostream>
 #include <iomanip>
 
-#define ASSIGNMENT(op) void MP::operator op## =(byte const& value) {MP::write(value op MP::read());}
+#define ASSIGNMENT(op) void MP::operator op## =(byte const& value) {MP::write(MP::read() op value);}
+// TODO: explicitely overload all operators
+// #define OP(op) void MP::operator op##(byte)
 
 MP::MemoryProxy(Memory* parent, word address) : parent(parent), address(address), mode(MEMORY_MAPPED) {}
 MP::MemoryProxy(byte* ptr) : ptr(ptr), mode(DIRECT_POINTER) {}
-MP::MemoryProxy(word& ptr16, byte hilo) : ptr16(&ptr16), hilo(hilo), mode(CPU_REGISTER) {}
+MP::MemoryProxy(word& ptr16, byte hilo) : mode(CPU_REGISTER), ptr16(&ptr16), hilo(hilo) {}
 
 byte MP::read() const {
     switch (mode) {

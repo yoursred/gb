@@ -2,6 +2,25 @@
 #define __MEMORY_H
 
 #include "include.h"
+// #include "cpu/cpu.h"
+#include <string>
+#include <sstream>
+#include <vector>
+
+class CPU;
+
+struct mem_write {
+    size_t cpu_steps;
+    word address;
+    byte value;
+
+    mem_write(size_t _, word __, byte ___) {
+        cpu_steps = _;
+        address = __;
+        value = ___;
+    }
+};
+
 
 #define MODE_ROM 0
 #define MODE_MBC1 1
@@ -43,7 +62,7 @@
 class Memory {
     public:
     // byte BANK_0[0x4000];
-    byte BANKS[0x4000]; // MBC5 supports up to 512 RAM banks
+    byte BANKS[0x10000]; // MBC5 supports up to 512 RAM banks
     byte VRAM [0x2000];
     byte ERAM [0x2000]; // MBC5 supports up to 16 RAM banks
     byte WRAM [0x2000];
@@ -65,6 +84,12 @@ class Memory {
     bool boot_rom = false;
 
     byte mode;
+
+    CPU *cpu;
+
+    std::stringstream serial_o;
+    std::vector<mem_write> mem_writes;
+    size_t cpu_steps = 0;
 
 
     Memory(byte ROM[], unsigned int size);

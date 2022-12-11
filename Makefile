@@ -1,5 +1,8 @@
 # Basic bitch makefile
 
+
+# TODO: How do you do this?
+# override CXXFLAGS += -D__GHOST_DEBUG 
 GPP=g++ 
 # x86_64-apple-darwin21-g++-12
 

@@ -1,7 +1,14 @@
 #include "ppu/ppu.h"
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
+const char* ppu_state[] = {
+    "HBLANK",
+    "VBLANK",
+    "OAM_SEARCH",
+    "PIXEL_TRANSFER"
+};
 
 PPU::PPU(Memory& mem):
     LCDC(mem.IO_R[0x40]), 
@@ -40,47 +47,50 @@ void PPU::tick() {
         case PIXEL_TRANSFER: // 144 * 160 = 23040
             // Push out 8 pixels = (2bpp * 8) bits or 2 bytes to buffer
             // Switch to HBLANK if x=160
-            if (ticks == 80) {
-                fifo_size = 0;
-                fifo = 0;
+            if (ticks > 90) { 
+                // This is to simulate the 12 tick delay at the start of every scanline
+                // It takes 2 ticks to fill FIFO from 0
+                // TODO: explain what the fuck is happening
+                fetch(); // FIFO fetch is always executed in mode 3
             }
-            fetch(); // FIFO fetch is always executed in mode 3
             if (fifo_size > 8) {
                 push_pixel(); // Only push pixels if we have more than 8 in fifo
                 x++;
             }
             if (x == 160) {
-                STAT = (STAT & ~2) | HBLANK;
+                STAT = (STAT & ~0b11) | HBLANK;
             }
         break;
         case OAM_SEARCH:
             // TODO: Implement objects ("sprites")
             if (ticks == 79) {
                 x = 0;
-                STAT = (STAT & ~2) | PIXEL_TRANSFER;
+                fifo_size = 0;
+                fifo = 0;
+                STAT = (STAT & ~0b11) | PIXEL_TRANSFER;
             }
         break;
         case HBLANK:
         // Switch to VBLANK if LY=144 and scanline is done
         if (ticks == 455){ // At end of scanline
-            ticks = 0;
+            // ticks = 0;
             LY++;
             if (LY == 144) { // Visible `lines` done, switch to vblank
-                STAT = (STAT & ~2) | VBLANK;
+                STAT = (STAT & ~0b11) | VBLANK;
             }
             else { // Start next normal scanline
-                STAT = (STAT & ~2) | OAM_SEARCH;
+                STAT = (STAT & ~0b11) | OAM_SEARCH;
             }
         }
         break;
         case VBLANK:
         // Switch to OAM_SEARCH if LY=153, end of VBLANK
         if (ticks == 455) {
-            ticks = 0;
+            // ticks = 0;
             LY++;
             if (LY == 153) { // Jump back to top
                 LY = 0;
-                STAT = (STAT & ~2) | OAM_SEARCH;
+                STAT = (STAT & ~0b11) | OAM_SEARCH;
             }
         }
         break;
@@ -92,7 +102,8 @@ void PPU::tick() {
 void PPU::fetch() {
     // Fetch 8 pixels from VRAM and put them into fifo if fifo_size <= 8
     fetch_ticks++;
-    if (fetch_ticks == 6 && fifo_size <= 8) {
+    // if (fetch_ticks == 6 && fifo_size <= 8) {
+    if (fifo_size <= 8) {
         // Get address of the tile data in current tile map
         word cluster = ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
         tile_id = VRAM[0x1800 + (LY * 32) + x];
@@ -100,7 +111,7 @@ void PPU::fetch() {
         fifo |= cluster << (2 * (8 - fifo_size));
         fifo_size += 8;
     }
-    fetch_ticks %= 6;
+    // fetch_ticks %= 6;
 }
 
 void inline PPU::push_pixel() {
@@ -123,6 +134,13 @@ void PPU::print_ppu_registers() {
     PRINT_PPU_REG(OBP1)
     PRINT_PPU_REG(WY)
     PRINT_PPU_REG(WX)
+}
+
+std::string PPU::str() {
+    std::stringstream out;
+    out << std::dec << ticks << "," << ppu_state[STAT & 0b11] << "," << std::dec <<(int) LY << "," << std::dec <<(int) x;
+    out << "," << std::dec << (int) fifo_size << "\n";
+    return out.str();
 }
 
 
