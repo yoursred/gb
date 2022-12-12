@@ -1,5 +1,5 @@
-#ifndef __GB_H
-#define __GB_H
+#ifndef __CPU_H
+#define __CPU_H
 
 #include "include.h"
 #include "memory/memory.h"

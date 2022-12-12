@@ -2,3 +2,7 @@ build/
 roms/
 memory.bin
 fb.bin
+*.log
+*.bin
+*.ods
+*.csv

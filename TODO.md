@@ -2,10 +2,10 @@
 - [x] 0xCB prefixed instruction fetching
 - [x] Cycle counting
 - [x] Create a separate memory class that allows bank switching and a more accurate databus
+- [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects
 - [ ] Finish debugger (WIP)
 - [ ] Graphics (WIP)
 - [ ] Raw `Memory` read and write functions for debugging
-- [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects
 - [ ] Control execution speed
 - [ ] Documentation and useful comments (there are comments of dubious value all over)
 - [ ] Touch up python tools to always generate usable code

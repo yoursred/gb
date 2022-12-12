@@ -1,5 +1,5 @@
-#ifndef __GB_INCLUDE_H
-#define __GB_INCLUDE_H
+#ifndef __GLOBAL_INCLUDE_H
+#define __GLOBAL_INCLUDE_H
 
 #define FLAG_Z 0x80
 #define FLAG_N 0x40
