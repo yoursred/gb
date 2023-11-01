@@ -2,6 +2,7 @@
 - [x] 0xCB prefixed instruction fetching
 - [x] Cycle counting
 - [x] Create a separate memory class that allows bank switching and a more accurate databus
+- [ ] Abandon cycle counting, revert back to monke and get accurate-ish timing
 - [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects
 - [ ] Finish debugger (WIP)
 - [ ] Graphics (WIP)

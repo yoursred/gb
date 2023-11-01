@@ -54,6 +54,7 @@ byte CPU::fetch_instruction() {
 }
 
 byte CPU::prefetch() {
+    // This is for the deboogger
     CPU::opcode = memory[R.pc];
     byte length;
     if (opcode != 0xCB){
@@ -76,15 +77,21 @@ byte CPU::prefetch() {
 
 void CPU::step() {
     // TODO: halt
-    timer_tick();
-    handle_interrupt();
+    // timer_tick();
     if (!is_halted) {
-        new_pc += fetch_instruction();
+        // if (!int_trig){
+            new_pc += fetch_instruction();
+        // } else {
+        //     fetch_instruction();
+        // }
         switch (opcode) {
             case (0x00): break;
             case (0xCB): decode_prefixed(); break;
             default: decode();
         }
+        // } else {
+            
+        // }
         switch (ime_buffer) {
             case EI_0:
                 ime_buffer = EI_1;
@@ -107,6 +114,8 @@ void CPU::step() {
     }
     R.pc = new_pc;
     // current_cycles = 0;
+    int_trig = handle_interrupt();
+    // timer_tick();
 }
 
 bool CPU::handle_interrupt() {
@@ -120,6 +129,7 @@ bool CPU::handle_interrupt() {
             ret = true;
             is_halted = false;
             // std::cout << "INTERRUPT\n";
+            // std::cout << COUT_HEX_BYTE_DS(IF) << " " << COUT_HEX_BYTE_DS(IE)
         }
         switch (IF & IE) {
             case INT_VBLANK:
@@ -131,8 +141,14 @@ bool CPU::handle_interrupt() {
                 IF &= ~INT_LCD_STAT;
                 break;
             case INT_TIMER:
-                RST(0x50);
+                std::cout << "INT_TIMER" << std::endl;
+                std::cout << log();
+                memory[--(R.sp)] = R.pc >> 8;
+                memory[--(R.sp)] = R.pc;
+                R.pc = 0x50;
+                new_pc = 0x50;
                 IF &= ~INT_TIMER;
+                std::cout << log();
                 break;
             case INT_SERIAL:
                 RST(0x58);
@@ -155,12 +171,18 @@ bool CPU::handle_interrupt() {
 }
 
 void CPU::timer_tick() {
-    // https://pixelbits.16-b.it/GBEDG/timers/#timer-operation
+    // -https://pixelbits.16-b.it/GBEDG/timers/#timer-operation- DEAD LINK
+    // https://hacktix.github.io/GBEDG/timers/#timer-operation
     div_timer += 4;
     DIV = div_timer >> 8;
     if (tima_reload) {
-        TIMA = TMA;
-        tima_reload = false;
+        if (tima_reload_pipe == 4) {
+            TIMA = TMA;
+            tima_reload = false;
+            tima_reload = 0;
+        } else {
+            
+        }
     }
 
     /*  TODO: Explain
@@ -175,15 +197,17 @@ void CPU::timer_tick() {
     if (last_div_bit && !(div_bit && (TAC & TAC_ENABLE))) {
         if (TIMA == 0xFF) {
             // TODO: implement timer interrupt abortion
+            // UPDATE: See Roe v. Wade
             TIMA = 0;
             tima_reload = true;
-            // IF |= INT_TIMER;
+            tima_reload_pipe = 1;
+            IF |= INT_TIMER; // Why was this commented out?
         } else  {
             TIMA++;
         }
     }
     last_div_bit = div_bit;
-
+    tima_reload_pipe++;
 }
 
 std::string CPU::log() {

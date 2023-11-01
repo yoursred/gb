@@ -52,6 +52,7 @@ class CPU {
     bool ime = false;
     byte ime_buffer = 0;
     byte &IF, &IE;
+    bool int_trig = false;
 
     // Timer stuff
     // TODO: Move to separate file/class
@@ -62,6 +63,7 @@ class CPU {
     // size_t div_debug = 0;
     bool last_div_bit = false;
     bool tima_reload = false;
+    byte tima_reload_pipe = 0;
     
 
     byte fetch_instruction();

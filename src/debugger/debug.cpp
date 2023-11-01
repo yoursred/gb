@@ -11,6 +11,7 @@
 #include "ppu/ppu.h"
 
 
+
 void cpu_only_thread(CPU& cpu, byte& state, std::vector<Breakpoint>& breakpoints) {
     while (state != DBG_END) {
         if (state == DBG_RUNNING) {
@@ -61,25 +62,38 @@ void dbg_main(Memory& mem, CPU& cpu, PPU& ppu) {
     int i;
 
 
-    std::cout << "boygame debuger" << std::endl;
+    std::cout << "boygame deboogger, version ___" << std::endl;
 
     // std::thread cpu_thread(cpu_only_thread, std::ref(cpu), std::ref(state), std::ref(b));
     std::thread cpu_thread(ppu_thread, std::ref(cpu), std::ref(ppu), std::ref(state), std::ref(b));
 
 
     while (state != DBG_END) { // main loop
+        // TODO: Implement similar command-syntax generation to yoursred/showdown-analysis-bot
         std::cout << "> ";
         std::getline(std::cin, cmd);
         cmd_ss = std::stringstream(cmd);
         cmd_ss >> token;
 
-        if (token == "break" || token == "b") { // Set breakpoint
+        if (token == "break" || token == "b") { 
+            // Set breakpoint
             // TODO: break on not just PC
             if (cmd_ss >> std::hex >> x) {
-                b.push_back(Breakpoint("pc", x));
+                if (cmd_ss >> token) {
+                    if (token == "pc" || token == "af" || token == "bc" || token == "de" || token == "hl" ||
+                        token == "a" || token == "b" || token == "c" || token == "d" || token == "e" || 
+                        token == "h" || token == "l") 
+                    {
+                        b.push_back(Breakpoint(token, x));
+                    } else {
+                        std::cout << "Syntax error in break! Unknown register `" << token << "`" << std::endl;
+                    }
+                } else {
+                    b.push_back(Breakpoint("pc", x));
+                }
             }
             else {
-                std::cout << "Syntax error in break!" << std::endl;
+                std::cout << "Syntax error in break! Invalid hex value `" << COUT_HEX_WORD(x) << "`" << std::endl;
             }
         } else
         //--------------------------------------------------------------

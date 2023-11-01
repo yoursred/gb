@@ -4,6 +4,7 @@
 #include <iomanip>
 
 Breakpoint::Breakpoint(std::string rs, word value) {
+    // TODO: Expand breakpoint types
     STR_RWATCH(pc)
     STR_RWATCH(af) STR_RWATCH(bc) STR_RWATCH(de) STR_RWATCH(hl)
     STR_RWATCH(a) STR_RWATCH(b) STR_RWATCH(c) STR_RWATCH(d)

@@ -27,8 +27,10 @@ void CPU::ADD(word& src) {
     R.hl += src;
 }
 
-void CPU::ADD_SP(sbyte src) { // ADD SP, e8
-    // TODO: flags, note: src is signed
+void CPU::ADD_SP(sbyte src) {
+    // ADD SP, e8
+    // note: src is signed
+    // flags are computed using the lower byte
     sword offset = src;
     R.update_flag(FLAG_H, (((R.sp & 0xf) + (offset & 0xf)) > 0xf));
     R.update_flag(FLAG_C, (((R.sp & 0xff) + (offset & 0xFF)) > 0xFF));
@@ -259,7 +261,7 @@ void CPU::JP(word address) {
 }
 
 void CPU::JPHL(void) {
-    // TODO: deprecated
+    // DEPRECATED
     CPU::new_pc = memory[R.hl];
     CPU::new_pc |= memory[R.hl + 1] << 8;
 }
@@ -383,4 +385,5 @@ void CPU::SCF(void) {
 void CPU::STOP(void) {
     ; // TODO: this other thing
     // Fuck this bs
+    // Seriously, fuck this
 }
