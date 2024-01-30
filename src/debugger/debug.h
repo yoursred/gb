@@ -30,11 +30,13 @@ enum rwatch {
 struct Breakpoint {
     rwatch watch;
     
+    word address16;
     word value16;
     byte value8;
     
     Breakpoint(std::string rs, word value);
     Breakpoint(rwatch watch, word value);
+    Breakpoint(rwatch watch, word address, byte value);
     Breakpoint(rwatch watch, byte value);
     
     bool match(CPU& cpu);

@@ -77,7 +77,6 @@ void dbg_main(Memory& mem, CPU& cpu, PPU& ppu) {
 
         if (token == "break" || token == "b") { 
             // Set breakpoint
-            // TODO: break on not just PC
             if (cmd_ss >> std::hex >> x) {
                 if (cmd_ss >> token) {
                     if (token == "pc" || token == "af" || token == "bc" || token == "de" || token == "hl" ||
@@ -140,7 +139,10 @@ void dbg_main(Memory& mem, CPU& cpu, PPU& ppu) {
         //--------------------------------------------------------------
         if (token == "list" || token == "lb" || token == "l") { // List breakpoints
             for (word i = 0; i < b.size(); i++) {
-                std::cout << i << " - @ PC=" << COUT_HEX_WORD_DS(b[i].value16) << std::endl;
+                int b_count = b.size();
+                int p_width = 0;
+                for (;b_count > 0; b_count /= 10) p_width++;
+                std::cout << std::string(p_width, ' ') <<  i << " - "  << b[i].str() << std::endl;
             }
         } else
         //--------------------------------------------------------------
