@@ -109,8 +109,12 @@ void CPU::step() {
     instructions++;
     cycles += current_cycles;
     // timer_timer += current_cycles;
-    for (;current_cycles > 0; current_cycles--) {
-        timer_tick();
+    if (opcode != 0xF0) { // Memory timing test
+        for (;current_cycles > 0; current_cycles--) {
+            // timer_tick();
+        }
+    } else {
+        // std::cout << "Encountered F0" << std::endl;
     }
     R.pc = new_pc;
     // current_cycles = 0;
@@ -141,14 +145,14 @@ bool CPU::handle_interrupt() {
                 IF &= ~INT_LCD_STAT;
                 break;
             case INT_TIMER:
-                std::cout << "INT_TIMER" << std::endl;
-                std::cout << log();
+                // std::cout << "INT_TIMER" << std::endl;
+                // std::cout << log();
                 memory[--(R.sp)] = R.pc >> 8;
                 memory[--(R.sp)] = R.pc;
                 R.pc = 0x50;
                 new_pc = 0x50;
                 IF &= ~INT_TIMER;
-                std::cout << log();
+                // std::cout << log();
                 break;
             case INT_SERIAL:
                 RST(0x58);
@@ -170,6 +174,12 @@ bool CPU::handle_interrupt() {
     return false;
 }
 
+void CPU::cycle(byte count) {
+    for (;count > 0; count--) {
+
+    }
+}
+
 void CPU::timer_tick() {
     // -https://pixelbits.16-b.it/GBEDG/timers/#timer-operation- DEAD LINK
     // https://hacktix.github.io/GBEDG/timers/#timer-operation
@@ -181,7 +191,7 @@ void CPU::timer_tick() {
             tima_reload = false;
             tima_reload = 0;
         } else {
-            
+
         }
     }
 

@@ -69,6 +69,9 @@ Memory::Memory(byte BOOTROM[]) {
 }
 
 byte Memory::read(word address) {
+    // for (byte i = 0; i < 4; i++) {
+    //     cpu->timer_tick();
+    // }
     address &= 0xFFFF;
     // return Memory::MBC1_read(address);
     if (address == 0xFF44) {

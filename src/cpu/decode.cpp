@@ -321,7 +321,15 @@ void CPU::decode() {
             break;
         case (0xee): CPU::XOR(&working_byte);break;
         case (0xef): CPU::RST(0x28);break;
-        case (0xf0): CPU::LD(R_A, memory[0xFF00 + working_byte]);break;
+        case (0xf0): // Let's test "accurate timing"
+            // timer_tick();
+            // timer_tick();
+            // CPU::LD(R_A, memory[0xFF00 + working_byte]);
+            R_A = memory[0xFF00 + working_byte];
+            // timer_tick();
+            // timer_tick();
+            // timer_tick();
+            break;
         case (0xf1): CPU::POP(R.af);break;
         case (0xf2): CPU::LD(R_A, memory[0xFF00 + R_C]);break;
         case (0xf3): CPU::DI();break;

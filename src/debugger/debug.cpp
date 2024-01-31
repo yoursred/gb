@@ -147,7 +147,11 @@ void dbg_main(Memory& mem, CPU& cpu, PPU& ppu) {
         } else
         //--------------------------------------------------------------
         if (token == "opc") { // Print out current instruction
-            print_instruction(cpu);
+            std::cout << print_instruction(cpu) << std::endl;
+        } else
+        if (token == "pause") {
+            state = DBG_PAUSED;
+            std::cout << "Paused execution" << std::endl;
         } else
         if (token == "ppu") {
             ppu.print_ppu_registers();

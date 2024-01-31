@@ -74,6 +74,7 @@ class CPU {
 
     bool handle_interrupt();
 
+    void cycle(byte count);
     void timer_tick();
 
     #ifdef __GHOST_DEBUG
