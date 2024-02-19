@@ -69,6 +69,11 @@ Memory::Memory(byte BOOTROM[]) {
 }
 
 byte Memory::read(word address) {
+    if (!last_read_flag) {
+        last_read = address;
+        last_read_flag = true;
+    }
+    // mem_reads.push_back
     // for (byte i = 0; i < 4; i++) {
     //     cpu->timer_tick();
     // }
@@ -104,7 +109,12 @@ byte Memory::read(word address) {
 }
 
 void Memory::write(word address, byte value) {
-    address &= 0xFFFF;
+    address &= 0xFFFF; // I'm pretty sure this is unnecessary
+    if (!last_wrote_flag) {
+        last_wrote = address;
+        last_wrote_flag = true;
+    }
+
     if (address < 0x8000) {
         write_regs(address, value);
     }
@@ -117,11 +127,13 @@ void Memory::write(word address, byte value) {
     else if (address < 0xE000)
         WRAM[address - 0xC000] = value;
     else if (address < 0xFE00)
-        return;
+    ;
+        // return; // clown behaviour
     else if (address < 0xFEA0)
         OAM_T[address - 0xFE00] = value;
     else if (address < 0xFF00)
-        return;
+    ;
+        // return; // clown behaviour
     else if (address < 0xFF80)
         IO_R[address - 0xFF00] = value;
     else if (address < 0xFFFF)
@@ -199,6 +211,64 @@ void Memory::write_regs(word address, byte value) {
             }
             break;
     }
+}
+
+byte Memory::raw_read(word address) {
+    address &= 0xFFFF;
+    // return Memory::MBC1_read(address);
+    if (address == 0xFF44) {
+        return 0x90;
+    }
+    if (address < 0x4000) {
+        return BANKS[address];
+    }
+    if (address < 0x8000) { // Banks 01-XX, 00-XX for MBC5
+        return BANKS[address + rom_bank * 0x4000 - 0x4000];
+    }
+    if (address < 0xA000) // WRAM
+        return VRAM[address - 0x8000];
+    if (address < 0xC000) {
+        return ram_enable ? ERAM[address + ram_bank * 0x2000 - 0xA000] : 0xFF;
+    }
+    if (address < 0xE000)
+        return WRAM[address - 0xC000];
+    if (address < 0xFE00)
+        return WRAM[address - 0xE000];
+    if (address < 0xFEA0)
+        return OAM_T[address - 0xFE00];
+    if (address < 0xFF00)
+        return 0xFF;
+    if (address < 0xFF80)
+        return IO_R[address - 0xFF00];
+    if (address < 0xFFFF)
+        return HRAM[address - 0xFF80];
+    return IE;
+}
+
+void Memory::raw_write(word address, byte value) {
+    if (address < 0x8000) {
+        write_regs(address, value);
+    }
+    else if (address < 0xA000)
+        VRAM[address - 0x8000] = value;
+    else if (address < 0xC000) {
+        if (ram_enable)
+            ERAM[address + ram_bank * 0x2000 - 0xA000] = value;
+    }
+    else if (address < 0xE000)
+        WRAM[address - 0xC000] = value;
+    else if (address < 0xFE00)
+        ;
+    else if (address < 0xFEA0)
+        OAM_T[address - 0xFE00] = value;
+    else if (address < 0xFF00)
+        ;
+    else if (address < 0xFF80)
+        IO_R[address - 0xFF00] = value;
+    else if (address < 0xFFFF)
+        HRAM[address - 0xFF80] = value;
+    else
+        IE = value;
 }
 
 Memory::MemoryProxy Memory::operator[](const word value) {

@@ -28,7 +28,8 @@ void cpu_only_thread(CPU& cpu, byte& state, std::vector<Breakpoint>& breakpoints
     }
 }
 
-void ppu_thread(CPU& cpu, PPU& ppu, byte& state, std::vector<Breakpoint>& breakpoints) {
+void ppu_thread
+(CPU& cpu, PPU& ppu, byte& state, std::vector<Breakpoint>& breakpoints) {
     int i;
     while (state != DBG_END) {
         if (state == DBG_RUNNING) {

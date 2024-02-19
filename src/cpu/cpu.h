@@ -64,6 +64,8 @@ class CPU {
     bool last_div_bit = false;
     bool tima_reload = false;
     byte tima_reload_pipe = 0;
+
+
     
 
     byte fetch_instruction();

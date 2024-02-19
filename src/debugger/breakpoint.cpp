@@ -3,13 +3,18 @@
 #include <sstream>
 #include <iomanip>
 
-Breakpoint::Breakpoint(std::string rs, word value) {
+Breakpoint::Breakpoint(std::string rs, word value, byte mem_value = 0) {
     // TODO: Expand breakpoint types
-    STR_RWATCH(pc)
-    STR_RWATCH(af) STR_RWATCH(bc) STR_RWATCH(de) STR_RWATCH(hl)
-    STR_RWATCH(a) STR_RWATCH(b) STR_RWATCH(c) STR_RWATCH(d)
-    STR_RWATCH(e) STR_RWATCH(h) STR_RWATCH(l)
-    if ((int)watch >> 4) {
+    RWATCH_STR_IF(pc)
+    RWATCH_STR_IF(af) RWATCH_STR_IF(bc) RWATCH_STR_IF(de) RWATCH_STR_IF(hl)
+    RWATCH_STR_IF(a) RWATCH_STR_IF(b) RWATCH_STR_IF(c) RWATCH_STR_IF(d)
+    RWATCH_STR_IF(e) RWATCH_STR_IF(h) RWATCH_STR_IF(l)
+    RWATCH_STR_IF(wread)  RWATCH_STR_IF(wwrite) RWATCH_STR_IF(wmem)
+    if (watch >> 8) {
+        address16 = value;
+        value8 = mem_value;
+    } else
+    if (watch >> 4) {
         value16 = value;
     } else {
         value8 = value;
@@ -25,7 +30,12 @@ Breakpoint::Breakpoint(rwatch watch, word value) {
 Breakpoint::Breakpoint(rwatch watch, byte value) {
     Breakpoint::value8 = value;
     Breakpoint::watch = watch;
-    std::stringstream ss;
+    std::stringstream ss; // Hello?
+}
+
+Breakpoint::Breakpoint(rwatch watch, word address, byte value) {
+    Breakpoint::value8 = value;
+    Breakpoint::address16 = address;
 }
 
 bool Breakpoint::match(CPU& cpu) {
@@ -66,32 +76,58 @@ bool Breakpoint::match(CPU& cpu) {
             break;
         case l:
             x = value8 == (cpu.R.hl & 0xFF);
+            break;
+        case wread:
+            x = ((address16 == cpu.memory.last_read) && cpu.memory.last_read_flag);
+            break;
+        case wwrite:
+            x = ((address16 == cpu.memory.last_wrote) && cpu.memory.last_wrote_flag);
+            break;
+        case wmem:
+            cpu.memory.last_read_flag = true;
+            x = value8 == cpu.memory.read(address16);
+            break;
     }
+
+    cpu.memory.last_read_flag = false;
+    cpu.memory.last_wrote_flag = false;
 
     return x;
 }
 
 std::string Breakpoint::str() {
+    // TODO: Change enum to make code more comprehensible
     std::stringstream ss;
     switch (watch) {
-        RWATCH_STR(pc)
-        RWATCH_STR(af)
-        RWATCH_STR(bc)
-        RWATCH_STR(de)
-        RWATCH_STR(hl)
-        RWATCH_STR(a)
-        RWATCH_STR(b)
-        RWATCH_STR(c)
-        RWATCH_STR(d)
-        RWATCH_STR(e)
-        RWATCH_STR(h)
-        RWATCH_STR(l)
+        RWATCH_STR_CASE(pc)
+        RWATCH_STR_CASE(af)
+        RWATCH_STR_CASE(bc)
+        RWATCH_STR_CASE(de)
+        RWATCH_STR_CASE(hl)
+        RWATCH_STR_CASE(a)
+        RWATCH_STR_CASE(b)
+        RWATCH_STR_CASE(c)
+        RWATCH_STR_CASE(d)
+        RWATCH_STR_CASE(e)
+        RWATCH_STR_CASE(h)
+        RWATCH_STR_CASE(l)
+        case wread:
+            ss << "[" << COUT_HEX_WORD_DS(address16) << "] -->";
+            break;
+        case wmem:
+            ss << "[" << COUT_HEX_WORD_DS(address16) << "] == " << COUT_HEX_BYTE_DS(value8);
+            break;
+        case wwrite:
+            ss << "[" << COUT_HEX_WORD_DS(address16) << "] <--";
+            break;
     }
+    
 
-    if (watch >> 4) {
-        ss << "==" << COUT_HEX_WORD_DS(value16);
-    } else {
-        ss << "==" << COUT_HEX_BYTE_DS(value8);
+    if (watch >> 4 == 1) {
+        ss << " == " << COUT_HEX_WORD_DS(value16);
+    } else 
+    if (watch >> 8 != 1) {
+        ss << " == " << COUT_HEX_BYTE_DS(value8);
     }
 
     return ss.str();

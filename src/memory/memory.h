@@ -21,6 +21,17 @@ struct mem_write {
     }
 };
 
+struct mem_read {
+    size_t cpu_steps;
+    word address;
+    byte value;
+
+    mem_read(size_t _, word __, byte ___) {
+        cpu_steps = _;
+        address = __;
+        value = ___;
+    }
+};
 
 #define MODE_ROM 0
 #define MODE_MBC1 1
@@ -63,12 +74,12 @@ class Memory {
     public:
     // byte BANK_0[0x4000];
     byte BANKS[0x10000]; // MBC5 supports up to 512 RAM banks
-    byte VRAM [0x2000];
-    byte ERAM [0x2000]; // MBC5 supports up to 16 RAM banks
-    byte WRAM [0x2000];
-    byte OAM_T [0x100];
-    byte IO_R   [0x80];
-    byte HRAM   [0x7F];
+    byte VRAM  [0x2000]; // more clown behaviour
+    byte ERAM  [0x2000]; // MBC5 supports up to 16 RAM banks
+    byte WRAM  [0x2000];
+    byte OAM_T  [0x100];
+    byte IO_R    [0x80];
+    byte HRAM    [0x7F];
     byte IE;
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;
@@ -89,7 +100,14 @@ class Memory {
 
     std::stringstream serial_o;
     std::vector<mem_write> mem_writes;
+    std::vector<mem_read> mem_reads;
     size_t cpu_steps = 0;
+
+    // Debugger stuff
+    word last_read;
+    bool last_read_flag = false;
+    word last_wrote;
+    bool last_wrote_flag = false;
 
 
     Memory(byte ROM[], unsigned int size);
@@ -98,6 +116,9 @@ class Memory {
     byte read(word address);
     void write(word address, byte value);
     void write_regs(word address, byte value);
+
+    byte raw_read(word address);
+    void raw_write(word address, byte value);
 
     void tick(byte cycles);
 
@@ -115,6 +136,7 @@ class Memory {
     // void MBC5(word address, byte value); 
 
     struct MemoryProxy {
+        // TODO: Explain
         public:
         Memory* parent;
         word address;
