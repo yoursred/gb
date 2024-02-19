@@ -10,8 +10,9 @@ SRCDIR=src
 INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
+VERSION=\"0.0.0_$(shell git rev-parse --short HEAD)\"
 
-CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11
+CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11 -DVERSION=$(VERSION)
 
 .PHONY: clean
 

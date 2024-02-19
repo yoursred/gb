@@ -83,7 +83,10 @@
         "filesystem": "cpp",
         "stack": "cpp",
         "map": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "__tree": "cpp",
+        "__verbose_abort": "cpp",
+        "charconv": "cpp"
     },
     "makefile.launchConfigurations": [
         {

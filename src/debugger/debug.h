@@ -4,7 +4,10 @@
 #include "cpu/cpu.h"
 #include "ppu/ppu.h"
 #include "memory/memory.h"
+#include <iostream>
+#include <map>
 #include <string>
+#include <vector>
 
 #define DBG_STOPPED 0
 #define DBG_RUNNING 1
@@ -52,15 +55,32 @@ struct Breakpoint {
     std::string str();
 };
 
+
 class Debugger {
+    public:
+    std::ostream &output = std::cout;
+
+    byte state = DBG_STOPPED;
+    std::vector<Breakpoint> breakpoints;
+
+    std::string cmd;
+    std::stringstream cmd_ss;
+    std::string token;
+    word x, y;
+    int i;
+
     Memory& mem;
     CPU& cpu;
     PPU& ppu;
 
-    bool ppu_enable = false;
 
     Debugger(Memory& mem, CPU& cpu, PPU& ppu);
 
-    
+    void debug_main(int argc, const char* argv[]);
+    int split_command(std::string cmd, std::map<std::string, std::string> &tokenized);
+
+    private:
+    void cmd_break(std::map<std::string, std::string> args);
+
 };
 #endif
