@@ -51,4 +51,16 @@ struct Breakpoint {
     bool match(CPU& cpu);
     std::string str();
 };
+
+class Debugger {
+    Memory& mem;
+    CPU& cpu;
+    PPU& ppu;
+
+    bool ppu_enable = false;
+
+    Debugger(Memory& mem, CPU& cpu, PPU& ppu);
+
+    
+};
 #endif
