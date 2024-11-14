@@ -43,19 +43,20 @@ PPU runs at 2MHz, 1 PPU ticks = 2 CPU cycles.
 */
 
 void PPU::tick() {
+    // TODO: clean up
     switch (STAT & 0b11) {
         case PIXEL_TRANSFER: // 144 * 160 = 23040
             // Push out 8 pixels = (2bpp * 8) bits or 2 bytes to buffer
             // Switch to HBLANK if x=160
+            if (fifo.size()) {
+                push_pixel(); // Only push pixels if we have more than 8 in fifo
+                x++;
+            }
             if (ticks > 90) { 
                 // This is to simulate the 12 tick delay at the start of every scanline
                 // It takes 2 ticks to fill FIFO from 0
-                // TODO: explain what the fuck is happening
+                // TODO: explain what the fuck is happening (still don't know what i'm supposed to explain)
                 fetch(); // FIFO fetch is always executed in mode 3
-            }
-            if (fifo_size > 8) {
-                push_pixel(); // Only push pixels if we have more than 8 in fifo
-                x++;
             }
             if (x == 160) {
                 STAT = (STAT & ~0b11) | HBLANK;
@@ -101,24 +102,36 @@ void PPU::tick() {
 }
 
 void PPU::fetch() {
-    // TODO: This doesn't seem to work at all, replace with `std::deque`
-    // Fetch 8 pixels from VRAM and put them into fifo if fifo_size <= 8
-    fetch_ticks++;
-    // if (fetch_ticks == 6 && fifo_size <= 8) {
-    if (fifo_size <= 8) {
+    // Fetch 8 pixels from VRAM and put them into fifo if empty
+    if (fifo.empty()) {
         // Get address of the tile data in current tile map
-        tile_id = VRAM[BG_TILE_MAP + (LY * 32) + x];
+        tile_id = VRAM[BG_TILE_MAP + (LY / 8) * 32 + (x / 8)];
+        // std::cout << COUT_HEX_WORD_DS(BG_TILE_MAP + (LY / 8) * 32 + (x / 8)) << std::endl;
+
+        tile_row = VRAM[TILE_BLOCK + (tile_id << 4) + (LY % 8) * 2 + 1];
+        tile_row |= VRAM[TILE_BLOCK + (tile_id << 4) + (LY % 8) * 2] << 8;
+
+        unfuck_tile_data(tile_row);
+        for (int i = 0; i < 8; i++) {
+            // TODO: this works but god no
+            fifo.push_back((BGP >> (2 * ((tile_row >> (2 * (7 - i))) & 0b11))) & 0b11);
+        }
+        // fifo.push_back(tile);
+
         // tile_id = VRAM[0x1800 + (LY * 32) + x];
         // word cluster = ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
         // fifo &= (0xFFFF0000 << (2 * (8 - fifo_size))); // Zero out the bits to be updated
         // fifo |= cluster << (2 * (8 - fifo_size));
         // fifo_size += 8;
     }
-    // fetch_ticks %= 6;
+    // fetch_ticks++;
+    // fetch_ticks %= 8;
 }
 
 void inline PPU::push_pixel() {
     // buffer[LY * 160 + x] = fifo >> 30;
+    buffer[LY * 160 + x] = 3 - fifo.front();
+    fifo.pop_front();
     // fifo <<= 2;
     // fifo_size--;
 }
@@ -152,13 +165,14 @@ void PPU::operator delete(void* obj) {
     delete ((PPU*) obj)->buffer;
 }
 
-word unfuck_tile_data(word x) {
-    // this turns 0b_xxxxxxxxyyyyyyyy into  0b_xyxyxyxyxyxyxyxy
-    // TODO: make it apply color palettes
+void unfuck_tile_data(word &x) {
+    // this turns 0b_xxxxxxxxyyyyyyyy into 0b_yxyxyxyxyxyxyxyx -0b_xyxyxyxyxyxyxyxy-
     word ret = 0;
+    x = (x << 8) | (x >> 8);
     for (int i = 0; i < 8; i++) {
         ret |= ((x & (1 << i)) << i);
         ret |= ((x & (1 << (i + 8))) >> (7 - i));
     }
-    return ret;
+    // return ret;
+    x = ret;
 }

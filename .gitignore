@@ -8,3 +8,5 @@ tetrismem.bin*
 *.ods
 *.csv
 *.DS_Store
+*.o
+*.txt

@@ -26,8 +26,8 @@ typedef uint32_t FIFO;
 #define FETCH_DATA1   2
 #define FETCH_PUSH    3
 
-#define TILE_BLOCK  16
-#define BG_TILE_MAP  (0x1800 + ((LCDC | 8) >> 3) * 0x400)
+#define TILE_BLOCK  (0x1000 - ((LCDC & 16) >> 4) * 0x1000)
+#define BG_TILE_MAP  (0x1800 + ((LCDC & 8) >> 3) * 0x400)
 
 
 class PPU {
@@ -53,6 +53,7 @@ class PPU {
     byte x;
     byte tile_line;
     byte tile_id;
+    word tile_row;
 
 
     PPU(Memory& mem);
@@ -70,5 +71,5 @@ class PPU {
 };
 
 
-word unfuck_tile_data(word x);
+void unfuck_tile_data(word &x);
 #endif
