@@ -28,7 +28,9 @@ void dumphex(Memory& data, word start, word len);
 
 
 // void dumphex(Memory& data, word start, word len);
-void dbg_main(Memory& mem, CPU& cpu, PPU& ppu);
+// void dbg_main(Memory& mem, CPU& cpu, PPU& ppu);
+
+// void ppu_dbg_main(Memory& mem, PPU& ppu);
 
 enum rwatch {
     pc = 0x10, af = 0x11, bc = 0x12, de = 0x13, hl = 0x14,
@@ -77,6 +79,7 @@ class Debugger {
     Debugger(Memory& mem, CPU& cpu, PPU& ppu);
 
     void debug_main(int argc, const char* argv[]);
+    void ppu_debug_main(int argc, const char* argv[]);
     int split_command(std::string cmd, std::map<std::string, std::string> &tokenized);
 
     private:

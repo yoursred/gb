@@ -23,9 +23,10 @@ int main(int argc, const char* argv[]) {
     // std::stringstream doctor_log;
     // log << "cpu_steps,address,value\n";
     std::ifstream fs;
+    std::ofstream fbout("fb.bin", std::ios::out | std::ios::binary);
     // std::ofstream out("writes.csv");
     // std::ofstream out_dr("doctor.log");
-    byte test_rom[0x8000];
+    byte test_rom[0x10000];
     // struct stat buf;
 
     bool debug = false;
@@ -59,16 +60,28 @@ int main(int argc, const char* argv[]) {
     //     std::cerr << "Argument error" << std::endl;
     //     exit(1);
     // }
-    fs.open("bootrom.bin", std::ios::in | std::ios::binary);
-    fs.read((char*) test_rom, 0x8000);
-    // fs.close();
+    fs.open("tetrismem.bin", std::ios::in | std::ios::binary);
+    fs.read((char*) test_rom, 0x10000);
+    std::cout << "Loaded memory dump" << std::endl;
 
-    Memory cart = Memory(test_rom, 0x8000);
+    Memory cart = Memory(test_rom);
+    std::cout << "Copying memory dump" << std::endl;
+    for (word x = 0; x != 0xFFFF; x++) {
+        cart.raw_write(x, test_rom[x]);
+    }
+    std::cout << "Initializing emulator" << std::endl;
     CPU cpu(cart);
     cart.cpu = &cpu;
     PPU ppu(cart);
     Debugger dbg(cart, cpu, ppu);
-    dbg.debug_main(argc, argv);
+    // dbg.debug_main(argc, argv);
+    dbg.ppu_debug_main(argc, argv);
+
+    std::cout << "Dumping framebuffer" << std::endl;
+    // fbout.open("fb.bin", std::ios::out | std::ios::binary);
+    for (int i = 0; i < 160 * 144; i++){
+        fbout.write((char*) &ppu.buffer[i], sizeof(byte));
+    }
 
 
 

@@ -5,6 +5,7 @@
 #include "memory/memory.h"
 #include <cstdint>
 #include <string>
+#include <deque>
 
 typedef uint32_t FIFO;
 
@@ -25,6 +26,9 @@ typedef uint32_t FIFO;
 #define FETCH_DATA1   2
 #define FETCH_PUSH    3
 
+#define TILE_BLOCK  16
+#define BG_TILE_MAP  (0x1800 + ((LCDC | 8) >> 3) * 0x400)
+
 
 class PPU {
     public:
@@ -40,9 +44,10 @@ class PPU {
     
     byte fifo_size;
     byte fetch_ticks;
+    std::deque<byte> fifo;
     // bool fetch_tick;
 
-    FIFO fifo; // this pushes pixels to the left
+    // FIFO fifo; // this pushes pixels to the left
     
     word ticks;
     byte x;

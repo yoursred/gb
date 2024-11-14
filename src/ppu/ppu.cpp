@@ -29,8 +29,8 @@ PPU::PPU(Memory& mem):
     OAM = mem.OAM_T;
     ticks = 0;
     
-    STAT &= 0;
-    STAT |= 2;
+    // STAT &= 0;
+    // STAT |= 2;
 
     x = 0;
 
@@ -65,8 +65,9 @@ void PPU::tick() {
             // TODO: Implement objects ("sprites")
             if (ticks == 79) {
                 x = 0;
-                fifo_size = 0;
-                fifo = 0;
+                // fifo_size = 0;
+                // fifo = 0;
+                fifo.clear();
                 STAT = (STAT & ~0b11) | PIXEL_TRANSFER;
             }
         break;
@@ -100,24 +101,26 @@ void PPU::tick() {
 }
 
 void PPU::fetch() {
+    // TODO: This doesn't seem to work at all, replace with `std::deque`
     // Fetch 8 pixels from VRAM and put them into fifo if fifo_size <= 8
     fetch_ticks++;
     // if (fetch_ticks == 6 && fifo_size <= 8) {
     if (fifo_size <= 8) {
         // Get address of the tile data in current tile map
-        word cluster = ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
-        tile_id = VRAM[0x1800 + (LY * 32) + x];
-        fifo &= (0xFFFF0000 << (2 * (8 - fifo_size))); // Zero out the bits to be updated
-        fifo |= cluster << (2 * (8 - fifo_size));
-        fifo_size += 8;
+        tile_id = VRAM[BG_TILE_MAP + (LY * 32) + x];
+        // tile_id = VRAM[0x1800 + (LY * 32) + x];
+        // word cluster = ((VRAM[T(tile_id, LY) + 1]) | (VRAM[T(tile_id, LY)] << 8));
+        // fifo &= (0xFFFF0000 << (2 * (8 - fifo_size))); // Zero out the bits to be updated
+        // fifo |= cluster << (2 * (8 - fifo_size));
+        // fifo_size += 8;
     }
     // fetch_ticks %= 6;
 }
 
 void inline PPU::push_pixel() {
-    buffer[LY * 160 + x] = fifo >> 30;
-    fifo <<= 2;
-    fifo_size--;
+    // buffer[LY * 160 + x] = fifo >> 30;
+    // fifo <<= 2;
+    // fifo_size--;
 }
 
 void PPU::print_ppu_registers() {

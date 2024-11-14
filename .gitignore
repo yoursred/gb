@@ -2,6 +2,7 @@ build/
 roms/
 memory.bin
 fb.bin
+tetrismem.bin*
 *.log
 *.bin
 *.ods
