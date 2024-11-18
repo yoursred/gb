@@ -73,13 +73,13 @@ struct mem_read {
 class Memory {
     public:
     // byte BANK_0[0x4000];
-    byte BANKS[0x10000]; // MBC5 supports up to 512 RAM banks
-    byte VRAM  [0x2000]; // more clown behaviour
-    byte ERAM  [0x2000]; // MBC5 supports up to 16 RAM banks
-    byte WRAM  [0x2000];
-    byte OAM_T  [0x100];
-    byte IO_R    [0x80];
-    byte HRAM    [0x7F];
+    byte* BANKS; // [0x10000] = {0xFF}; // MBC5 supports up to 512 ROM banks
+    byte VRAM  [0x2000] = {0xFF}; // more clown behaviour
+    byte ERAM  [0x2000] = {0xFF}; // MBC5 supports up to 16 RAM banks
+    byte WRAM  [0x2000] = {0xFF};
+    byte OAM_T  [0x100] = {0xFF};
+    byte IO_R    [0x80] = {0xFF};
+    byte HRAM    [0x7F] = {0};
     byte IE;
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;

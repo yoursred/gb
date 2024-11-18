@@ -57,6 +57,8 @@ Memory::Memory(byte ROM[], unsigned int size) {
         exit(-1);
     }
 
+    BANKS = new byte[size];
+
     // It's populatin' time!
     // memcpy(BANKS, ROM, size);
     std::memcpy(BANKS, ROM, size);

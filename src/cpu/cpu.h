@@ -56,7 +56,10 @@ class CPU {
 
     // Timer stuff
     // TODO: Move to separate file/class
+    byte &JOY;
+    byte &SB, &SC;
     byte &DIV, &TIMA, &TMA, &TAC;
+    
     // word timer_timer = 0; // Yo dawg, I heard you liked timers so I put a timer on your timer
     word div_timer = 0;
     // size_t timer_debug = 0;

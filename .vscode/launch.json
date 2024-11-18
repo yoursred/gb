@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/build/gb",
             "args": [
                 "debug",
-                "roms/cpu_instrs/individual/01-special.gb"
+                "roms/pokegreen.gb"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

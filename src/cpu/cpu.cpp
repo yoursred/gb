@@ -12,6 +12,9 @@ CPU::CPU(Memory& memory):
     memory(memory),
     IF(memory.IO_R[0xF]),
     IE(memory.IE),
+    JOY(memory.IO_R[0]),
+    SB(memory.IO_R[1]),
+    SC(memory.IO_R[2]),
     DIV(memory.IO_R[4]),
     TIMA(memory.IO_R[5]),
     TMA(memory.IO_R[6]),
@@ -19,6 +22,16 @@ CPU::CPU(Memory& memory):
 {
     CPU::R = CPU::Registers();
     instructions = 0;
+
+    IF = 0xE1;
+    IE = 0x00;
+    JOY = 0xCF;
+    SB = 0x00;
+    SC = 0x7E;
+    DIV = 0x00;
+    TIMA = 0x00;
+    TMA = 0x00;
+    TAC = 0xF8;
 }
 
 // byte* CPU::mem_at(word* address) {

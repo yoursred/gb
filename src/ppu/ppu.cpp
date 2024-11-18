@@ -29,13 +29,29 @@ PPU::PPU(Memory& mem):
     OAM = mem.OAM_T;
     ticks = 0;
     
-    STAT &= 0;
-    STAT |= 2;
+    LCDC = 0x91;
+    STAT = 0x87;
+    SCX  = 0;
+    SCX  = 0;
+    LY   = 0;
+    LYC  = 0;
+
+    BGP  = 0xFC; 
+
+    // STAT &= 0;
+    // STAT |= 2;
 
     x = 0;
 
     // background = new byte[256 * 256];
     buffer = new byte[160 * 144 * 4]; // RGBA for convenience
+    for (size_t i = 0; i < 160 * 144 * 4; i++) {
+        if ((i + 1) % 4) {
+            
+        } else {
+
+        }
+    }
 }
 
 /*
@@ -130,8 +146,12 @@ void PPU::fetch() {
 
 void inline PPU::push_pixel() {
     // buffer[LY * 160 + x] = fifo >> 30;
-    for (int i = 0; i < 4; i++)
-        buffer[(LY * 160 + x) * 4 + i] = (i == 3) ? 255 : (3 - fifo.front()) * 85; // 255 - 3
+    for (int i = 0; i < 4; i++) {
+        if (i != 3)
+            buffer[(LY * 160 + x) * 4 + i] = (3 - fifo.front()) * 85; // 255 - 3
+        else
+            buffer[(LY * 160 + x) * 4 + i] = 255; // alpha value
+    }
     fifo.pop_front();
     // fifo <<= 2;
     // fifo_size--;
