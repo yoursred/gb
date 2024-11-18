@@ -10,12 +10,13 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/gb",
             "args": [
-                "roms/02-interrupts.gb"
+                "debug",
+                "roms/cpu_instrs/individual/01-special.gb"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true, // I prefer it this way
+            "externalConsole": false, // I prefer it this way
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb",
             "setupCommands": [

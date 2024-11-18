@@ -12,15 +12,14 @@ FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
 VERSION=\"0.0.0_$(shell git rev-parse --short HEAD)\"
 
-CXXFLAGS=-I$(INCL) -g -Wall -Wextra -std=c++11 -DVERSION=$(VERSION)
+CXXFLAGS=-lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -I$(INCL) -g -Wall -Wextra -std=c++11 -DVERSION=$(VERSION)
 
 .PHONY: clean
 
 $(shell mkdir -p build/cpu build/ppu)
 
 build/gb: build/main.o build/debugger/*.o build/cpu/*.o build/memory/*.o build/ppu/*.o
-	$(GPP) $(CXXFLAGS) $(BUILDDIR)/ppu/*.o $(BUILDDIR)/cpu/*.o $(BUILDDIR)/memory/*.o $(BUILDDIR)/debugger/*.o $(BUILDDIR)/main.o \
-	  -o $(BUILDDIR)/gb
+	$(GPP) $(BUILDDIR)/ppu/*.o $(BUILDDIR)/cpu/*.o $(BUILDDIR)/memory/*.o $(BUILDDIR)/debugger/*.o $(BUILDDIR)/main.o -o $(BUILDDIR)/gb $(CXXFLAGS) 
 
 build/main.o: src/main.cpp
 	$(GPP) $(CXXFLAGS) -c src/main.cpp -o $(BUILDDIR)/main.o

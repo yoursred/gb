@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string.h>
+#include <cstring>
 #include "memory/memory.h"
 #include "cpu/cpu.h"
 
@@ -58,7 +58,8 @@ Memory::Memory(byte ROM[], unsigned int size) {
     }
 
     // It's populatin' time!
-    memcpy(BANKS, ROM, size);
+    // memcpy(BANKS, ROM, size);
+    std::memcpy(BANKS, ROM, size);
 }
 
 Memory::Memory(byte BOOTROM[]) {

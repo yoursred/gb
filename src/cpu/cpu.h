@@ -27,7 +27,7 @@
 #define INT_JOYPAD   16
 
 #define TAC_ENABLE 4
-#define TAC_CS 0b11
+#define TAC_CS 0x3
 
 class CPU {
     public:
@@ -90,8 +90,8 @@ class CPU {
 
         Registers(void);
 
-        void print_regs(void);
-        void print_flags(void);
+        void print_regs(std::ostream& output);
+        void print_flags(std::ostream& output);
         void set_flag(byte flag);
         void unset_flag(byte flag);
         void flip_flag(byte flag);

@@ -53,7 +53,7 @@ std::string print_instruction(CPU& cpu) {
 // shamelessly copied from https://gist.github.com/ccbrown/9722406
 // modified to work with `Memory` and add column and row numbers
 // removed ascii and changed to c++ io
-void dumphex(Memory& data, word start, word len) {
+void dumphex(Memory& data, word start, word len, std::ostream& output) {
     if (len == 0) {
         return;
     }
@@ -66,27 +66,27 @@ void dumphex(Memory& data, word start, word len) {
     start -= start & 0xf;
 
     size_t i;
-    std::cout << "xxxx  x0 x1 x2 x3 x4 x5 x6 x7  x8 x9 xA xB xC xD xE xF" << std::endl;
-    std::cout << "      ------------------------------------------------" << std::endl;
-    std::cout << COUT_HEX_WORD(start) << "  ";
+    output << "xxxx  x0 x1 x2 x3 x4 x5 x6 x7  x8 x9 xA xB xC xD xE xF" << std::endl;
+    output << "      ------------------------------------------------" << std::endl;
+    output << COUT_HEX_WORD(start) << "  ";
 
     for (i = start; i < (end); ++i) {
         if (i < no_print) {
-            std::cout << "   ";
+            output << "   ";
         }
         else {
-            std::cout << COUT_HEX_BYTE((word) data[i]) << " ";
+            output << COUT_HEX_BYTE((word) data[i]) << " ";
         }
 
         if ((i+1) % 8 == 0 || i+1 == (end)) {
-            std::cout << " ";
+            output << " ";
             if ((i+1) % 16 == 0) {
                 if (!(i+1 == (end)))
-                    std::cout << std::endl << COUT_HEX_WORD((i + 1)) << "  ";
+                    output << std::endl << COUT_HEX_WORD((i + 1)) << "  ";
             }
         }
     }
-    std::cout << std::endl;
+    output << std::endl;
 }
 
 const char* instructions[] = {

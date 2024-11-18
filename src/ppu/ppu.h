@@ -13,7 +13,7 @@ typedef uint32_t FIFO;
 #define T(ID, ROW) ID * 16 + (ROW % 8) * 2
 // #define SHIFT_OUT(x, n) 
 // #define GET_WORD(SRC, ADDRESS) ((SRC[ADDRESS] << 8) | SRC[ADDRESS + 1])
-#define PRINT_PPU_REG(reg) std::cout << #reg << "=" << COUT_HEX_BYTE_DS(reg) << std::endl;
+#define PRINT_PPU_REG(out, reg) out << #reg << "=" << COUT_HEX_BYTE_DS(reg) << std::endl;
 
 
 #define HBLANK 0
@@ -32,14 +32,14 @@ typedef uint32_t FIFO;
 
 class PPU {
     public:
+    // TODO: initialize these values.
     byte &LCDC, &STAT, &SCY, &SCX, &LY, &LYC, 
          &DMA, &BGP, &OBP0, &OBP1, &WY, &WX;
     byte* VRAM;
     byte* OAM;
     
     // byte* background;
-    byte* buffer; 
-    // [160][144]; // convenience my boy
+    byte* buffer;
     
     
     byte fifo_size;
@@ -61,7 +61,7 @@ class PPU {
     void tick();
     void fetch();
 
-    void print_ppu_registers();
+    void print_ppu_registers(std::ostream& output);
     std::string str();
     
     

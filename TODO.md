@@ -11,3 +11,5 @@
 - [ ] Documentation and useful comments (there are comments of dubious value all over)
 - [ ] Touch up python tools to always generate usable code
 - [ ] Add unit tests
+- [ ] C++-ify
+- [ ] Add command to dump framebuffer

@@ -1,25 +1,29 @@
-#include<iostream>
-#include<stdio.h>
+#include <iostream>
+#include <iomanip>
 
 #include "include.h"
 #include "cpu/cpu.h"
 
 CPU::Registers::Registers(void) {
-    // Replicating DMG behaviour
     af = 0x1B0; bc = 0x13; de = 0xD8;
     hl = 0x14d; sp = 0xFFFE; pc = 0x100;
-
-    // set_flags("1000");
 }
 
-void CPU::Registers::print_regs(void) {
-    printf("AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x PC=%04x\n",
-        af, bc, de, hl, sp, pc);
+void CPU::Registers::print_regs(std::ostream& output) {
+    output << "AF: " << COUT_HEX_WORD_DS(af) << " ";
+    output << "BC: " << COUT_HEX_WORD_DS(bc) << " ";
+    output << "DE: " << COUT_HEX_WORD_DS(de) << std::endl;
+    output << "HL: " << COUT_HEX_WORD_DS(hl) << " ";
+    output << "SP: " << COUT_HEX_WORD_DS(sp) << " ";
+    output << "PC: " << COUT_HEX_WORD_DS(pc) << std::endl;
 }
 
-void CPU::Registers::print_flags(void) {
-    printf("z=%d n=%d h=%d c=%d\n",
-    get_flag(FLAG_Z), get_flag(FLAG_N), get_flag(FLAG_H), get_flag(FLAG_C));
+void CPU::Registers::print_flags(std::ostream& output) {
+    output << "z\tn\th\tc" << std::endl;
+    output << get_flag(FLAG_Z) << " ";
+    output << get_flag(FLAG_N) << " ";
+    output << get_flag(FLAG_H) << " ";
+    output << get_flag(FLAG_C) << std::endl;
 }
 
 void CPU::Registers::set_flag(byte flag) {

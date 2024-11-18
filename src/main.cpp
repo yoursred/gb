@@ -11,6 +11,7 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <string.h>
+// #include <SFML/Graphics.hpp>
 
 #define MS chrono::duration_cast<std::chrono::nanoseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count()
 
@@ -21,68 +22,57 @@ int main(int argc, const char* argv[]) {
     // TODO: command line arguments
     // std::stringstream log;
     // std::stringstream doctor_log;
-    // log << "cpu_steps,address,value\n";
     std::ifstream fs;
-    std::ofstream fbout("fb.bin", std::ios::out | std::ios::binary);
-    // std::ofstream out("writes.csv");
-    // std::ofstream out_dr("doctor.log");
-    byte test_rom[0x10000];
-    // struct stat buf;
+    byte* test_rom;
+    struct stat buf;
+    // sf::RenderWindow window;
 
     bool debug = false;
 
-    // if (argc == 2) {
-    //     if (stat(argv[1], &buf) == 0) {
-    //         fs.open(argv[1], std::ios::in | std::ios::binary);
-    //     }
-    //     else {
-    //         std::cerr << "File does not exist" << std::endl;
-    //         exit(1);
-    //     }
-    // }
-    // else if (argc == 3) {
-    //     if (strcmp(argv[1], "debug") || strcmp(argv[1], "d")) {
-    //         debug = true;
-    //         if (stat(argv[2], &buf) == 0) {
-    //             fs.open(argv[2], std::ios::in | std::ios::binary);
-    //         }
-    //         else {
-    //             std::cerr << "File does not exist" << std::endl;
-    //             exit(1);
-    //         }
-    //     }
-    //     else {
-    //         std::cerr << "Unknown option: " << argv[1] << std::endl;
-    //         exit(1);
-    //     }
-    // }
-    // else {
-    //     std::cerr << "Argument error" << std::endl;
-    //     exit(1);
-    // }
-    fs.open("tetrismem.bin", std::ios::in | std::ios::binary);
-    fs.read((char*) test_rom, 0x10000);
-    std::cout << "Loaded memory dump" << std::endl;
-
-    Memory cart = Memory(test_rom);
-    std::cout << "Copying memory dump" << std::endl;
-    for (word x = 0; x != 0xFFFF; x++) {
-        cart.raw_write(x, test_rom[x]);
+    if (argc == 2) {
+        if (stat(argv[1], &buf) == 0) {
+            test_rom = new byte[buf.st_size];
+            fs.open(argv[1], std::ios::in | std::ios::binary);
+            fs.read((char *) test_rom, buf.st_size);
+        }
+        else {
+            std::cerr << "File does not exist" << std::endl;
+            exit(1);
+        }
     }
-    std::cout << "Initializing emulator" << std::endl;
+    else if (argc == 3) {
+        if (strcmp(argv[1], "debug") || strcmp(argv[1], "d")) {
+            debug = true;
+            if (stat(argv[2], &buf) == 0) {
+                test_rom = new byte[buf.st_size];
+                fs.open(argv[2], std::ios::in | std::ios::binary);
+                fs.read((char *) test_rom, buf.st_size);
+            }
+            else {
+                std::cerr << "File does not exist" << std::endl;
+                exit(1);
+            }
+        }
+        else {
+            std::cerr << "Unknown option: " << argv[1] << std::endl;
+            exit(1);
+        }
+    }
+    else {
+        std::cerr << "Argument error" << std::endl;
+        exit(1);
+    }
+
+    Memory cart = Memory(test_rom, buf.st_size);
     CPU cpu(cart);
     cart.cpu = &cpu;
     PPU ppu(cart);
     Debugger dbg(cart, cpu, ppu);
-    // dbg.debug_main(argc, argv);
-    dbg.ppu_debug_main(argc, argv);
 
-    std::cout << "Dumping framebuffer" << std::endl;
-    // fbout.open("fb.bin", std::ios::out | std::ios::binary);
-    for (int i = 0; i < 160 * 144; i++){
-        fbout.write((char*) &ppu.buffer[i], sizeof(byte));
+    // dbg.split_command("help test");
+    if (debug) {
+        dbg.debug_main(argc, argv);
     }
-
 
 
     // if (debug) {

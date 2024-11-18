@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-Breakpoint::Breakpoint(std::string rs, word value, byte mem_value = 0) {
+Breakpoint::Breakpoint(std::string rs, word value16, byte value8 = 0) {
     // TODO: Expand breakpoint types
     RWATCH_STR_IF(pc)
     RWATCH_STR_IF(af) RWATCH_STR_IF(bc) RWATCH_STR_IF(de) RWATCH_STR_IF(hl)
@@ -11,13 +11,13 @@ Breakpoint::Breakpoint(std::string rs, word value, byte mem_value = 0) {
     RWATCH_STR_IF(e) RWATCH_STR_IF(h) RWATCH_STR_IF(l)
     RWATCH_STR_IF(wread)  RWATCH_STR_IF(wwrite) RWATCH_STR_IF(wmem)
     if (watch >> 8) {
-        address16 = value;
-        value8 = mem_value;
+        address16 = value16;
+        value8 = value8;
     } else
     if (watch >> 4) {
-        value16 = value;
+        Breakpoint::value16 = value16;
     } else {
-        value8 = value;
+        Breakpoint::value8 = value8;
     }
     
 }
@@ -36,6 +36,7 @@ Breakpoint::Breakpoint(rwatch watch, byte value) {
 Breakpoint::Breakpoint(rwatch watch, word address, byte value) {
     Breakpoint::value8 = value;
     Breakpoint::address16 = address;
+    Breakpoint::watch = watch;
 }
 
 bool Breakpoint::match(CPU& cpu) {
