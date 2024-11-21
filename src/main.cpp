@@ -22,18 +22,22 @@ int main(int argc, const char* argv[]) {
     // TODO: command line arguments
     // std::stringstream log;
     // std::stringstream doctor_log;
-    std::ifstream fs;
-    byte* test_rom;
-    struct stat buf;
+    std::ifstream fs_rom, fs_boot;
+    byte* rom;
+    byte* bootrom;
+    bool bootrom_enable = false;
+    bool rom_enable = true;
+    struct stat buf_rom;
+    struct stat buf_boot;
     // sf::RenderWindow window;
 
     bool debug = false;
 
     if (argc == 2) {
-        if (stat(argv[1], &buf) == 0) {
-            test_rom = new byte[buf.st_size];
-            fs.open(argv[1], std::ios::in | std::ios::binary);
-            fs.read((char *) test_rom, buf.st_size);
+        if (stat(argv[1], &buf_rom) == 0) {
+            rom = new byte[buf_rom.st_size];
+            fs_rom.open(argv[1], std::ios::in | std::ios::binary);
+            fs_rom.read((char *) rom, buf_rom.st_size);
         }
         else {
             std::cerr << "File does not exist" << std::endl;
@@ -41,12 +45,61 @@ int main(int argc, const char* argv[]) {
         }
     }
     else if (argc == 3) {
-        if (strcmp(argv[1], "debug") || strcmp(argv[1], "d")) {
+        if (std::string("debug") == std::string(argv[1])|| std::string("d") == std::string(argv[1])) {
             debug = true;
-            if (stat(argv[2], &buf) == 0) {
-                test_rom = new byte[buf.st_size];
-                fs.open(argv[2], std::ios::in | std::ios::binary);
-                fs.read((char *) test_rom, buf.st_size);
+            if (stat(argv[2], &buf_rom) == 0) {
+                rom = new byte[buf_rom.st_size];
+                fs_rom.open(argv[2], std::ios::in | std::ios::binary);
+                fs_rom.read((char *) rom, buf_rom.st_size);
+            }
+            else {
+                std::cerr << "File does not exist" << std::endl;
+                exit(1);
+            }
+        }
+        else if (std::string("bootrom") == std::string(argv[1])) {
+            debug = true;
+            if (stat(argv[2], &buf_boot) == 0) {
+                bootrom = new byte[buf_boot.st_size];
+                fs_rom.open(argv[2], std::ios::in | std::ios::binary);
+                fs_rom.read((char *) bootrom, buf_boot.st_size);
+                bootrom_enable = true;
+                rom_enable = false;
+            }
+            else {
+                std::cerr << "File does not exist" << std::endl;
+                exit(1);
+            }
+        }
+        else {
+            std::cerr << "Unknown option: " << argv[1] << std::endl;
+            exit(1);
+        }
+    }
+    else if (argc == 4) {
+        if (std::string("debug") == std::string(argv[1])|| std::string("d") == std::string(argv[1])) {
+            debug = true;
+            if (stat(argv[2], &buf_rom) == 0) {
+                rom = new byte[buf_rom.st_size];
+                fs_rom.open(argv[2], std::ios::in | std::ios::binary);
+                fs_rom.read((char *) rom, buf_rom.st_size);
+                fs_rom.close();
+            }
+            else {
+                std::cerr << "File does not exist" << std::endl;
+                exit(1);
+            }
+            if (stat(argv[3], &buf_boot) == 0) {
+                std::cout << buf_boot.st_size << std::endl;
+                if (buf_boot.st_size == 0x100) {
+                    bootrom = new byte[buf_boot.st_size];
+                    fs_boot.open(argv[3], std::ios::in | std::ios::binary);
+                    fs_boot.read((char *) bootrom, buf_boot.st_size);
+                    bootrom_enable = true;
+                } else {
+                    std::cerr << "Invalid bootrom size" << std::endl;
+                    exit(1);
+                }
             }
             else {
                 std::cerr << "File does not exist" << std::endl;
@@ -63,8 +116,18 @@ int main(int argc, const char* argv[]) {
         exit(1);
     }
 
-    Memory cart = Memory(test_rom, buf.st_size);
+    // if (!bootrom_enable)
+    // else
+    // Memory cart = Memory(bootrom);
+    Memory cart = Memory(bootrom, rom, buf_rom.st_size);
     CPU cpu(cart);
+    cpu.R.pc = 0;
+    cpu.new_pc = 0;
+    cpu.R.af = 0;
+    cpu.R.bc = 0;
+    cpu.R.de = 0;
+    cpu.R.hl = 0;
+    cpu.R.sp = 0;
     cart.cpu = &cpu;
     PPU ppu(cart);
     Debugger dbg(cart, cpu, ppu);

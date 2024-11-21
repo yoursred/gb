@@ -10,8 +10,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/gb",
             "args": [
+                // "bootrom",
                 "debug",
-                "roms/pokegreen.gb"
+                "roms/game-boy-test-roms-v7.0/dmg-acid2/dmg-acid2.gb",
+                "dmg_boot.bin"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

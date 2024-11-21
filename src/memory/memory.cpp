@@ -3,7 +3,7 @@
 #include "memory/memory.h"
 #include "cpu/cpu.h"
 
-Memory::Memory(byte ROM[], unsigned int size) {
+Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
     // prox = MemoryProxy();
 
     switch (ROM[0x147]) { // Cart type
@@ -61,6 +61,10 @@ Memory::Memory(byte ROM[], unsigned int size) {
 
     // It's populatin' time!
     // memcpy(BANKS, ROM, size);
+    if (BOOTROM != NULL) {
+        std::memcpy(Memory::BOOTROM, BOOTROM, 0x100);
+        boot_rom = true;
+    }
     std::memcpy(BANKS, ROM, size);
 }
 
@@ -68,7 +72,10 @@ Memory::Memory(byte BOOTROM[]) {
     mode = MODE_ROM;
     rom_banks = 2;
     ram_banks = 0;
-    memcpy(BANKS, BOOTROM, 0x100);
+    std::memcpy(Memory::BOOTROM, BOOTROM, 0x100);
+    BANKS = new byte[0x8000];
+    boot_rom = true;
+    
 }
 
 byte Memory::read(word address) {
@@ -76,15 +83,22 @@ byte Memory::read(word address) {
         last_read = address;
         last_read_flag = true;
     }
+
+    if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
+        std::cout << "ILLEGAL WRITE" << std::endl;
     // mem_reads.push_back
-    // for (byte i = 0; i < 4; i++) {
+    // for (byte i = 0; i < 4; i++) { // TODO: revisit this tomfoolery, it looks like past me
+                                      //       might have been in the kitchen and just didn't
+                                      //       know he was baking
     //     cpu->timer_tick();
     // }
     address &= 0xFFFF;
     // return Memory::MBC1_read(address);
-    if (address == 0xFF44) {
-        return 0x90;
-    }
+    // if (address == 0xFF44) {
+    //     return 0x90; // More clown behavior
+    // }
+    if (address < 0x100 && boot_rom)
+        return BOOTROM[address];
     if (address < 0x4000) {
         return BANKS[address];
     }
@@ -104,6 +118,8 @@ byte Memory::read(word address) {
         return OAM_T[address - 0xFE00];
     if (address < 0xFF00)
         return 0xFF;
+    if (address == 0xFF00)
+        return 0xFF;
     if (address < 0xFF80)
         return IO_R[address - 0xFF00];
     if (address < 0xFFFF)
@@ -112,7 +128,7 @@ byte Memory::read(word address) {
 }
 
 void Memory::write(word address, byte value) {
-    address &= 0xFFFF; // I'm pretty sure this is unnecessary
+    // address &= 0xFFFF; // I'm pretty sure this is unnecessary
     if (!last_wrote_flag) {
         last_wrote = address;
         last_wrote_flag = true;
@@ -129,15 +145,25 @@ void Memory::write(word address, byte value) {
     }
     else if (address < 0xE000)
         WRAM[address - 0xC000] = value;
-    else if (address < 0xFE00)
-    ;
+    else if (address < 0xFE00);
         // return; // clown behaviour
     else if (address < 0xFEA0)
         OAM_T[address - 0xFE00] = value;
     else if (address < 0xFF00)
-    ;
+        IO_R[0] = (value & ~0xF) | IO_R[0];
         // return; // clown behaviour
-    else if (address < 0xFF80)
+    else if (address == 0xFF41)
+        IO_R[0x41] = (value & ~7) | IO_R[0x41];
+    else if (address == 0xFF44);
+    else if (address == 0xFF45) {
+        IO_R[0x45] = value;
+        if (value == IO_R[0x44]) {
+            IO_R[0x41] |= 4;
+        }
+    }
+    else if (address == 0xFF50) 
+        boot_rom = !value;
+    else if (address < 0xFF80) // I'm not a clown, I'm the whole circus
         IO_R[address - 0xFF00] = value;
     else if (address < 0xFFFF)
         HRAM[address - 0xFF80] = value;
@@ -154,6 +180,8 @@ void Memory::write(word address, byte value) {
         cpu->div_timer = 0;
         IO_R[04] = 0;
     }
+    if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
+        std::cout << "ILLEGAL WRITE" << std::endl;
 }
 
 void Memory::write_regs(word address, byte value) {

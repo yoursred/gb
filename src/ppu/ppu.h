@@ -28,6 +28,7 @@ typedef uint32_t FIFO;
 
 #define TILE_BLOCK  (0x1000 - ((LCDC & 16) >> 4) * 0x1000)
 #define BG_TILE_MAP  (0x1800 + ((LCDC & 8) >> 3) * 0x400)
+#define WINDOW_TILE_MAP  (0x1800 + ((LCDC & 64) >> 6) * 0x400)
 
 
 class PPU {
@@ -35,17 +36,22 @@ class PPU {
     // TODO: initialize these values.
     byte &LCDC, &STAT, &SCY, &SCX, &LY, &LYC, 
          &DMA, &BGP, &OBP0, &OBP1, &WY, &WX;
+    byte &IF;
     byte* VRAM;
     byte* OAM;
     
     // byte* background;
     byte* buffer;
     
-    
+    byte scx_wait;
+    byte wly;
     byte fifo_size;
     byte fetch_ticks;
     std::deque<byte> fifo;
-    // bool fetch_tick;
+    bool last_stat_irq = false;
+    bool curr_stat_irq = false;
+    bool last_vblank_irq = false;
+    bool curr_vblank_irq = false;
 
     // FIFO fifo; // this pushes pixels to the left
     

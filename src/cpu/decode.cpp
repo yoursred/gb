@@ -324,8 +324,8 @@ void CPU::decode() {
         case (0xf0): // Let's test "accurate timing"
             // timer_tick();
             // timer_tick();
-            // CPU::LD(R_A, memory[0xFF00 + working_byte]);
-            R_A = memory[0xFF00 + working_byte];
+            CPU::LD(R_A, memory[0xFF00 + working_byte]);
+            // R_A = memory[0xFF00 + working_byte];
             // timer_tick();
             // timer_tick();
             // timer_tick();

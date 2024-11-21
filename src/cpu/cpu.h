@@ -52,6 +52,8 @@ class CPU {
     bool ime = false;
     byte ime_buffer = 0;
     byte &IF, &IE;
+    bool last_stat_int = false; // This is to detect a rising edge
+    bool last_joyp_int = false;
     bool int_trig = false;
 
     // Timer stuff

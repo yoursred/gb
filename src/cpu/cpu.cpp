@@ -25,7 +25,7 @@ CPU::CPU(Memory& memory):
 
     IF = 0xE1;
     IE = 0x00;
-    JOY = 0xCF;
+    JOY = 0xFF;
     SB = 0x00;
     SC = 0x7E;
     DIV = 0x00;
@@ -47,10 +47,10 @@ byte CPU::fetch_instruction() {
     byte length;
     if (opcode != 0xCB){
         length = get_length(CPU::opcode);
-        CPU::current_cycles += get_cycles(CPU::opcode);
+        CPU::current_cycles = get_cycles(CPU::opcode);
     } else {
         length = get_length_prefixed(CPU::opcode); // Wholly redundant, it's always =2
-        CPU::current_cycles += get_cycles_prefixed(CPU::opcode);
+        CPU::current_cycles = get_cycles_prefixed(CPU::opcode);
     }
     // printf("opc=0x%02X, length=%d\n", CPU::opcode, length);
     switch (length) { // maybe we don't really need this?
@@ -97,8 +97,22 @@ void CPU::step() {
         // } else {
         //     fetch_instruction();
         // }
+
+        for (byte i = 0; i < current_cycles; i++) {
+            timer_tick();
+        }
+
         switch (opcode) {
             case (0x00): break;
+            // case (0xB6):
+            //     timer_tick();
+            //     timer_tick();
+            //     timer_tick();
+            //     timer_tick();
+            //     timer_tick();
+            //     timer_tick();
+            //     decode();
+            //     break;
             case (0xCB): decode_prefixed(); break;
             default: decode();
         }
@@ -118,19 +132,23 @@ void CPU::step() {
     }
     else {
         current_cycles = 4;
+        for (byte i = 0; i < current_cycles; i++) {
+            timer_tick();
+        }
     }
     instructions++;
     cycles += current_cycles;
     // timer_timer += current_cycles;
-    if (opcode != 0xF0) { // Memory timing test
-        for (;current_cycles > 0; current_cycles--) {
-            // timer_tick();
-        }
-    } else {
-        // std::cout << "Encountered F0" << std::endl;
-    }
+    // if (opcode != 0xB6 || true) { // Memory timing test
+    //     for (byte i = 0; i < current_cycles; i++) {
+    //         timer_tick();
+    //     }
+    // } else {
+    //     // std::cout << "Encountered F0" << std::endl;
+    // }
     R.pc = new_pc;
     // current_cycles = 0;
+    // last_stat_int = IF & INT_LCD_STAT;
     int_trig = handle_interrupt();
     // timer_tick();
 }
@@ -150,12 +168,18 @@ bool CPU::handle_interrupt() {
         }
         switch (IF & IE) {
             case INT_VBLANK:
+                std::cout << std::endl << "VBLANK IRQ" << std::endl;
+                std::cout << "> ";
                 RST(0x40);
                 IF &= ~INT_VBLANK;
                 break;
             case INT_LCD_STAT:
+                // if (!last_stat_int) { // rising-edge detection
+                std::cout << std::endl << "STAT IRQ" << std::endl;
+                std::cout << "> ";
                 RST(0x48);
                 IF &= ~INT_LCD_STAT;
+                // }
                 break;
             case INT_TIMER:
                 // std::cout << "INT_TIMER" << std::endl;
@@ -182,7 +206,15 @@ bool CPU::handle_interrupt() {
         return ret;
     }
     else if (IE & IF) {
-        is_halted = false;
+        switch (IE & IF) {
+            case INT_LCD_STAT:
+            break;
+            case INT_JOYPAD:
+            break;
+            default:
+            is_halted = false;
+            break;
+        }
     }
     return false;
 }
@@ -235,19 +267,20 @@ void CPU::timer_tick() {
 
 std::string CPU::log() {
     std::stringstream out;
-    out <<  "A:" << COUT_HEX_BYTE(R_A);
-    out << " F:" << COUT_HEX_BYTE(R_F);
-    out << " B:" << COUT_HEX_BYTE(R_B);
-    out << " C:" << COUT_HEX_BYTE(R_C);
-    out << " D:" << COUT_HEX_BYTE(R_D);
-    out << " E:" << COUT_HEX_BYTE(R_E);
-    out << " H:" << COUT_HEX_BYTE(R_H);
-    out << " L:" << COUT_HEX_BYTE(R_L);
-    out << " SP:" << COUT_HEX_WORD(R.sp);
-    out << " PC:" << COUT_HEX_WORD(R.pc);
-    out << " PCMEM:";
-    out << COUT_HEX_BYTE(memory[R.pc]) << "," << COUT_HEX_BYTE(memory[R.pc + 1]) << ",";
-    out << COUT_HEX_BYTE(memory[R.pc + 2]) << "," << COUT_HEX_BYTE(memory[R.pc + 3]) << std::endl;
+    out <<  "A: " << COUT_HEX_BYTE(R_A);
+    out << " F: " << COUT_HEX_BYTE(R_F);
+    out << " B: " << COUT_HEX_BYTE(R_B);
+    out << " C: " << COUT_HEX_BYTE(R_C);
+    out << " D: " << COUT_HEX_BYTE(R_D);
+    out << " E: " << COUT_HEX_BYTE(R_E);
+    out << " H: " << COUT_HEX_BYTE(R_H);
+    out << " L: " << COUT_HEX_BYTE(R_L);
+    out << " SP: " << COUT_HEX_WORD(R.sp);
+    out << " PC: 00:" << COUT_HEX_WORD(R.pc);
+    // out << " PCMEM:";
+    out << " (";
+    out << COUT_HEX_BYTE(memory[R.pc]) << " " << COUT_HEX_BYTE(memory[R.pc + 1]) << " ";
+    out << COUT_HEX_BYTE(memory[R.pc + 2]) << " " << COUT_HEX_BYTE(memory[R.pc + 3]) << ")" << std::endl;
 
     return out.str();
 }   
