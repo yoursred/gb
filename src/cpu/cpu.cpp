@@ -88,6 +88,39 @@ byte CPU::prefetch() {
     return length;
 }
 
+byte CPU::fetch() {
+    CPU::opcode = memory[R.pc];
+    R.pc++;
+}
+
+void CPU::tick() {
+    timer_tick();
+    if (!is_halted) {
+        if ((cc % 4) == 0) {
+            // Fire M-cycle operation
+            decode();
+            if (cc == 4) {
+                fetch();
+            }
+        }
+        //  else if (cc % 4 == 0) {
+        //     if (cc == 4)
+        //         fetch_instruction();
+        // } 
+        // else {
+            // else if (cc % 4 == 0); // Queue next M-cycle operation
+            // Note: This shouldn't be needed in theory, the instruction methods (`CPU::INC(byte dst)`
+            //       for example) should be able to handle their own actions. To what extent they'll
+            //       need to be modified still needs to be determined. `CPU::LD(byte dst, byte src)`
+            //       has the same timing so long as both `src` and `dst` are 8-bit registers. 
+            //       Only methods with more than a single M-cycle (less than half) will need this new 
+            //       timing quirk.
+            
+        // }
+    }
+    cc--;
+}
+
 void CPU::step() {
     // TODO: halt
     // timer_tick();

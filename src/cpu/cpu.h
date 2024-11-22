@@ -44,6 +44,7 @@ class CPU {
     
     word new_pc = 0x100;
     byte current_cycles = 0;
+    byte cc;
     unsigned long cycles = 0;
     unsigned long instructions = 0;
 
@@ -72,7 +73,7 @@ class CPU {
 
 
     
-
+    byte fetch();
     byte fetch_instruction();
     byte prefetch();
     void step();
@@ -81,6 +82,8 @@ class CPU {
 
     bool handle_interrupt();
 
+    byte machine_cycle();
+    void tick();
     void cycle(byte count);
     void timer_tick();
 
@@ -112,13 +115,32 @@ class CPU {
 
     private:
     
-    // --SECTION-- ARITHMETIC
+    // --SECTION-- 8-BIT ARITHMETIC
+    void ADD(byte& r8); void ADD_HL(); void ADD_d8();
+    void ADC(byte& r8); void ADC_HL(); void ADC_d8();
+    void SUB(byte& r8); void SUB_HL(); void SUB_d8();
+    void SBC(byte& r8); void SBC_HL(); void SBC_d8();
+    void CP (byte& r8); void CP_HL (); void CP_d8 ();
+    void INC(byte& r8); void INC_HL(); void INC_d8();
+    void DEC(byte& r8); void DEC_HL(); void DEC_d8();
+    void AND(byte& r8); void AND_HL(); void AND_d8();
+    void OR (byte& r8); void OR_HL (); void OR_d8 ();
+    void XOR(byte& r8); void XOR_HL(); void XOR_d8();
+    void CCF();
+    void SCF();
+    void CPL();
+    void DAA();
+    // --SECTION--16-BIT ARITHMETIC
+    void INC(word& dst);
+    void DEC(word& dst);
+    void ADD_SP(sbyte src);
+
     void ADC(MP src);
-    void ADD(MP src); void ADD(word& src); void ADD_SP(sbyte src);
+    void ADD(MP src); void ADD(word& src); 
     void AND(MP src);
     void CP (MP src);
-    void DEC(MP dst); void DEC(word& dst);
-    void INC(MP dst); void INC(word& dst);
+    void DEC(MP dst); 
+    void INC(MP dst); 
     void OR (MP src);
     void SBC(MP src);
     void SUB(MP src);
@@ -170,14 +192,11 @@ class CPU {
     void POP(word& dst);
 
     // --SECTION-- MISC
-    void CCF(void);
-    void CPL(void);
-    void DAA(void);
+    
     void DI (void);
     void EI (void);
     void HALT(void);
     void NOP(void);
-    void SCF(void);
     void STOP(void);
 
 };
