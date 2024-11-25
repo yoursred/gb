@@ -104,6 +104,7 @@ void CPU::tick() {
         if ((tcycles % 4) == 0) {
             // Fire M-cycle operation
             decode();
+            // TODO: fetch here
             // mcycles--;
             // if (mcycles == 4) {
             //     fetch();

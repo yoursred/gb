@@ -518,54 +518,205 @@ void CPU::DEC_HLptr() {
 }
 
 void CPU::AND(byte& r8) {
-
+    R.a &= r8;
+    R.update_flag(FLAG_Z, R.a);
+    R.set_flags("-010");
+    fetch();
 }
 
 void CPU::AND_HLptr() {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.hl];
+        break;
+        case 1:
+        R.a &= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::AND_d8() {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.pc++];
+        break;
+        case 1:
+        R.a &= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::OR (byte& r8) {
-
+    R.a |= r8;
+    R.update_flag(FLAG_Z, R.a);
+    R.set_flags("-010");
+    fetch();
 }
 
 void CPU::OR_HLptr () {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.hl];
+        break;
+        case 1:
+        R.a |= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::OR_d8 () {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.pc++];
+        break;
+        case 1:
+        R.a |= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::XOR(byte& r8) {
-
+    R.a ^= r8;
+    R.update_flag(FLAG_Z, R.a);
+    R.set_flags("-010");
+    fetch();
 }
 
 void CPU::XOR_HLptr() {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.hl];
+        break;
+        case 1:
+        R.a ^= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::XOR_d8() {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.pc++];
+        break;
+        case 1:
+        R.a ^= R.z;
+        R.update_flag(FLAG_Z, R.a);
+        R.set_flags("-010");
+        fetch();
+        break;
+    }
 }
 
 void CPU::CCF() {
-
+    R.flip_flag(FLAG_C);
+    R.set_flags("-00-");
+    fetch();
 }
 
 void CPU::SCF() {
-
-}
-
-void CPU::CPL() {
-
+    R.set_flags("-001");
+    fetch();
 }
 
 void CPU::DAA() {
+    word result = R.a;
+    R.unset_flag(FLAG_Z);
+    if (R.get_flag(FLAG_N)) {
+        if (R.get_flag(FLAG_H)) {
+            result = (result - 0x06) & 0xFF;
+        }
+        if (R.get_flag(FLAG_C)) {
+            result -= 0x60;
+        }
+    }
+    else {
+        if (R.get_flag(FLAG_H) || (result & 0xf) > 0x9) {
+            result += 0x6;
+        }
+        if (R.get_flag(FLAG_C) || result > 0x9f) {
+            result += 0x60;
+        }
+    }
 
+    if ((result & 0xff) == 0) {
+        R.set_flag(FLAG_Z);
+    }
+    if ((result & 0x100) == 0x100) {
+        R.set_flag(FLAG_C);
+    }
+    R.unset_flag(FLAG_H);
+    R.a = result;
+    fetch();
+    // R.af &= 0xF0;
+    // R.af |= result << 8;
 }
 
+void CPU::CPL() {
+    R.a = ~R.a;
+    R.set_flags("-11-");
+    fetch();
+}
+
+// --SECTION--16-BIT ARITHMETIC
+void CPU::INC(word& r16) {
+    switch (tcycles >> 2) {
+        case 0:
+        r16++;
+        break;
+        case 1:
+        fetch();
+        break;
+    }
+}
+
+void CPU::DEC(word& r16) {
+    switch (tcycles >> 2) {
+        case 0:
+        r16--;
+        break;
+        case 1:
+        fetch();
+        break;
+    }
+}
+
+void CPU::ADD_HL(word& r16) {
+        switch (tcycles >> 2) {
+        case 0:
+        R.unset_flag(FLAG_N);
+        R.update_flag(FLAG_H, (((R.a & 0xf) + (r16 & 0xf)) & 0x10));
+        R.update_flag(FLAG_C, (R.a + r16) > 0xFF);
+        R.a += r8;
+        R.update_flag(FLAG_Z, !R.a);
+        fetch();
+        break;
+        case 1:
+        R.unset_flag(FLAG_N);
+        R.update_flag(FLAG_H, (((R.a & 0xfff) + (r16 & 0xfff)) & 0x100));
+        R.update_flag(FLAG_C, (R.a + r8) > 0xFF);
+        R.a += r8;
+        R.update_flag(FLAG_Z, !R.a);
+        fetch();
+        fetch();
+        break;
+    }
+}
+
+void CPU::ADD_SP() {
+
+}
