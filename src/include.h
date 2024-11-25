@@ -1,9 +1,14 @@
 #ifndef __GLOBAL_INCLUDE_H
 #define __GLOBAL_INCLUDE_H
 
+#include <cstdint>
+
 #ifndef VERSION
 #define VERSION "UNKNOWN"
 #endif
+
+/* You are not expected to understand this. */
+#define IS_BIG_ENDIAN (*(std::uint16_t *)”\0\xff” < 0x100)
 
 #define FLAG_Z 0x80
 #define FLAG_N 0x40
@@ -15,11 +20,11 @@
 #define CC_NC 0x8
 
 
-// TODO: specify size
-typedef unsigned char byte;
-typedef signed char sbyte;
-typedef unsigned short word;
-typedef signed short sword;
+
+typedef std::uint8_t byte;
+typedef std::int8_t sbyte;
+typedef std::uint16_t word;
+typedef std::int16_t sword;
 
 #define COUT_HEX_WORD_DS(x) "$" << std::setfill('0') << std::setw(4) << std::hex << x
 #define COUT_HEX_WORD(x) std::uppercase << std::setfill('0') << std::setw(4) << std::hex << x

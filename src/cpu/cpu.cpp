@@ -9,6 +9,7 @@
 
 
 CPU::CPU(Memory& memory): 
+    R(Registers()),
     memory(memory),
     IF(memory.IO_R[0xF]),
     IE(memory.IE),
@@ -20,7 +21,8 @@ CPU::CPU(Memory& memory):
     TMA(memory.IO_R[6]),
     TAC(memory.IO_R[7])
 {
-    CPU::R = CPU::Registers();
+    // CPU::R( = CPU::Registers());
+    // CPU::R = Registers();
     instructions = 0;
 
     IF = 0xE1;
@@ -89,26 +91,30 @@ byte CPU::prefetch() {
 }
 
 byte CPU::fetch() {
-    CPU::opcode = memory[R.pc];
-    R.pc++;
+    opcode = memory[R.pc++];
+    // tcycles = get_cycles(opcode);
+    tcycles = 0;
+    // mcycles = tcycles / 4;
+    // R.pc++;
 }
 
 void CPU::tick() {
     timer_tick();
     if (!is_halted) {
-        if ((cc % 4) == 0) {
+        if ((tcycles % 4) == 0) {
             // Fire M-cycle operation
             decode();
-            if (cc == 4) {
-                fetch();
-            }
+            // mcycles--;
+            // if (mcycles == 4) {
+            //     fetch();
+            // }
         }
-        //  else if (cc % 4 == 0) {
-        //     if (cc == 4)
+        //  else if (mcycles % 4 == 0) {
+        //     if (mcycles == 4)
         //         fetch_instruction();
         // } 
         // else {
-            // else if (cc % 4 == 0); // Queue next M-cycle operation
+            // else if (mcycles % 4 == 0); // Queue next M-cycle operation
             // Note: This shouldn't be needed in theory, the instruction methods (`CPU::INC(byte dst)`
             //       for example) should be able to handle their own actions. To what extent they'll
             //       need to be modified still needs to be determined. `CPU::LD(byte dst, byte src)`
@@ -118,7 +124,7 @@ void CPU::tick() {
             
         // }
     }
-    cc--;
+    tcycles++;
 }
 
 void CPU::step() {

@@ -4,9 +4,18 @@
 #include "include.h"
 #include "cpu/cpu.h"
 
-CPU::Registers::Registers(void) {
+CPU::Registers::Registers():
+    a(*((byte*) &af + 1)), f(*((byte*) &af)),
+    b(*((byte*) &bc + 1)), c(*((byte*) &bc)),
+    d(*((byte*) &de + 1)), e(*((byte*) &de)),
+    h(*((byte*) &hl + 1)), l(*((byte*) &hl)),
+    sph(*((byte*) &sp + 1)), spl(*((byte*) &sp)),
+    w(*((byte*) &wz + 1)), z(*((byte*) &wz))
+{
     af = 0x1B0; bc = 0x13; de = 0xD8;
     hl = 0x14d; sp = 0xFFFE; pc = 0x100;
+    wz = 0;
+    // a = *((byte*) &af);
 }
 
 void CPU::Registers::print_regs(std::ostream& output) {
