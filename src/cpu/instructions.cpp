@@ -2,7 +2,7 @@
 
 
 // --SECTION-- 8-BIT LOADS
-void CPU::LD(byte& r8, byte& r8p) {
+void CPU::LD(byte r8, byte& r8p) {
     fetch();
     r8p = r8;
 }
@@ -18,7 +18,7 @@ void CPU::LD(byte& r8) {
     }
 }
 
-void CPU::LD(byte& r8, word& r16ptr) {
+void CPU::LD(byte& r8, word r16ptr) {
     switch (tcycles >> 2) {
         case 0:
         R.z = memory[r16ptr];
@@ -29,7 +29,7 @@ void CPU::LD(byte& r8, word& r16ptr) {
         break;
     }
 }
-void CPU::LD(word& r16ptr, byte& r8) {
+void CPU::LD(word r16ptr, byte r8) {
     switch (tcycles >> 2) {
         case 0:
         memory[r16ptr] = r8;
@@ -216,7 +216,7 @@ void CPU::LD_SP_HL() {
     }
 }
 
-void CPU::PUSH(word& r16) {
+void CPU::PUSH(word r16) {
     switch (tcycles >> 2) {
         case 0:
         R.sp--;
@@ -253,22 +253,18 @@ void CPU::LD_HL_SP() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.l = R.spl + R.z;
-        R.unset_flag(FLAG_Z);
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.spl & 0xF) + (R.z & 0xF)) & 0x10));
-        R.update_flag(FLAG_C, ((R.spl + R.z) > 0xFF));
+        R.set_flags("00hc", OP_ADD, R.z, R.spl);
+        R.l = R.z + R.spl;
         break;
         case 2:
-        R.h = R.sph + R.get_flag(FLAG_C) + !!(R.z & 0x80) * 0xFF;
-        fetch();
+        R.h = R.sph + R.get_flag(FLAG_C) + (R.z >> 7) * 0xFF;
         break;
     }
 }
 
  // --SECTION-- 8-BIT ARITHMETIC
-void CPU::ADD(byte& r8) {
-    R.set_flags("z0hc", R.a, r8);
+void CPU::ADD(byte r8) {
+    R.set_flags("z0hc", OP_ADD, R.a, r8);
     R.a = R.a + r8;
     fetch();
 }
@@ -279,7 +275,7 @@ void CPU::ADD_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.set_flags("z0hc", R.a, R.z);
+        R.set_flags("z0hc", OP_ADD, R.a, R.z);
         R.a = R.a + R.z;
         fetch();
         break;
@@ -292,19 +288,16 @@ void CPU::ADD_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.set_flags("z0hc", R.a, R.z);
+        R.set_flags("z0hc", OP_ADD, R.a, R.z);
         R.a = R.a + R.z;
         fetch();
         break;
     }
 }
 
-void CPU::ADC(byte& r8) {
-    R.unset_flag(FLAG_N);
-    R.update_flag(FLAG_H, (((R.a & 0xf) + (r8 & 0xf) + R.get_flag(FLAG_C)) & 0x10));
-    R.update_flag(FLAG_C, (R.a + r8 + R.get_flag(FLAG_C)) > 0xFF);
-    R.a += r8;
-    R.update_flag(FLAG_Z, !R.a);
+void CPU::ADC(byte r8) {
+    R.set_flags("z0hc", OP_ADC, R.a, r8);
+    R.a = r8;
     fetch();
 }
 
@@ -314,11 +307,8 @@ void CPU::ADC_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) + (R.z & 0xf) + R.get_flag(FLAG_C)) & 0x10));
-        R.update_flag(FLAG_C, (R.a + R.z + R.get_flag(FLAG_C)) > 0xFF);
+        R.set_flags("z0hc", OP_ADC, R.a, R.z);
         R.a += R.z;
-        R.update_flag(FLAG_Z, !(R.a));
         fetch();
         break;
     }
@@ -330,22 +320,16 @@ void CPU::ADC_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) + (R.z & 0xf) + R.get_flag(FLAG_C)) & 0x10));
-        R.update_flag(FLAG_C, (R.a + R.z + R.get_flag(FLAG_C)) > 0xFF);
+        R.set_flags("z0hc", OP_ADC, R.a, R.z);
         R.a += R.z;
-        R.update_flag(FLAG_Z, !(R.a));
         fetch();
         break;
     }
 }
 
-void CPU::SUB(byte& r8) {
-    R.set_flag(FLAG_N);
-    R.update_flag(FLAG_H, (((R.a & 0xf) - (r8 & 0xf)) & 0x10));
-    R.update_flag(FLAG_C, R.a < r8);
-    R.a -= r8;
-    R.update_flag(FLAG_Z, !R.a);
+void CPU::SUB(byte r8) {
+    R.set_flags("z1hc", OP_SUB, R.a, r8);
+    R.a = R.a - r8;
     fetch();
 }
 
@@ -355,11 +339,8 @@ void CPU::SUB_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.set_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) - (R.z & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, R.a < R.z);
-        R.a -= R.z;
-        R.update_flag(FLAG_Z, !(R.a));
+        R.set_flags("z1hc", OP_SUB, R.a, R.z);
+        R.a = R.a - R.z;
         fetch();
         break;
     }
@@ -371,22 +352,17 @@ void CPU::SUB_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.update_flag(FLAG_Z, !(R.a + R.z));
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, ((R.a & 0xf) + (R.z & 0xf)) & 0x10);
-        R.update_flag(FLAG_C, (R.a + R.z) > 0xFF);
-        R.a -= R.z;
+        R.set_flags("z1hc", OP_SUB, R.a, R.z);
+        R.a = R.a - R.z;
         fetch();
         break;
     }
 }
 
-void CPU::SBC(byte& r8) {
-    R.set_flag(FLAG_N);
-    R.update_flag(FLAG_H, (R.a & 0xf) < ((r8 & 0xf) + R.get_flag(FLAG_C)));
-    R.update_flag(FLAG_C, R.a < (r8 + R.get_flag(FLAG_C)));
-    R.a = R.a - r8 - R.get_flag(FLAG_C);
-    R.update_flag(FLAG_Z, !R.a);
+void CPU::SBC(byte r8) {
+    byte result = R.a - r8 - R.get_flag(FLAG_C);
+    R.set_flags("z1hc", OP_SBC, R.a, r8);
+    R.a = result;
     fetch();
 }
 
@@ -396,11 +372,9 @@ void CPU::SBC_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.set_flag(FLAG_N);
-        R.update_flag(FLAG_H, (R.a & 0xf) < ((R.z & 0xf) + R.get_flag(FLAG_C)));
-        R.update_flag(FLAG_C, R.a < (R.z + R.get_flag(FLAG_C)));
-        R.a = R.a - R.z - R.get_flag(FLAG_C);
-        R.update_flag(FLAG_Z, !(R.a));
+        byte result = R.a - R.z - R.get_flag(FLAG_C);
+        R.set_flags("z1hc", OP_SBC, R.a, R.z);
+        R.a = result;
         fetch();
         break;
     }
@@ -412,21 +386,16 @@ void CPU::SBC_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.set_flag(FLAG_N);
-        R.update_flag(FLAG_H, (R.a & 0xf) < ((R.z & 0xf) + R.get_flag(FLAG_C)));
-        R.update_flag(FLAG_C, R.a < (R.z + R.get_flag(FLAG_C)));
-        R.a = R.a - R.z - R.get_flag(FLAG_C);
-        R.update_flag(FLAG_Z, !(R.a));
+        byte result = R.a - R.z - R.get_flag(FLAG_C);
+        R.set_flags("z1hc", OP_SBC, R.a, R.z);
+        R.a = result;
         fetch();
         break;
     }
 }
 
-void CPU::CP (byte& r8) {
-    R.set_flag(FLAG_N);
-    R.update_flag(FLAG_H, (((R.a & 0xf) - (r8 & 0xf)) & 0x10));
-    R.update_flag(FLAG_C, R.a < r8);
-    R.update_flag(FLAG_Z, !(R.a - r8));
+void CPU::CP (byte r8) {
+    R.set_flags("z1hc", OP_SUB, R.a, r8);
     fetch();
 }
 
@@ -436,10 +405,7 @@ void CPU::CP_HLptr () {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.set_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) - (R.z & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, R.a < R.z);
-        R.update_flag(FLAG_Z, !(R.a - R.z));
+        R.set_flags("z1hc", OP_SUB, R.a, R.z);
         fetch();
         break;
     }
@@ -451,19 +417,15 @@ void CPU::CP_d8 () {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.set_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) - (R.z & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, R.a < R.z);
-        R.update_flag(FLAG_Z, !(R.a - R.z));
+        R.set_flags("z1hc", OP_SUB, R.a, R.z);
         fetch();
         break;
     }
 }
 
-void CPU::INC(byte& r8) {
-    R.unset_flag(FLAG_N);
-    R.update_flag(FLAG_H, ((r8 & 0xf) + 1) & 0x10);
-    R.update_flag(FLAG_Z, !(++R.a));
+void CPU::INC(byte r8) {
+    R.set_flags("z0h-", OP_INC, R.a);
+    R.a++;
     fetch();
 }
 
@@ -473,10 +435,8 @@ void CPU::INC_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
+        R.set_flags("z0h-", OP_INC, R.z);
         memory[R.hl] = R.z + 1;
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, ((R.z & 0xF) + 1) & 0x10);
-        R.update_flag(FLAG_Z, !(++R.z));
         break;
         case 2:
         fetch();
@@ -484,10 +444,9 @@ void CPU::INC_HLptr() {
     }
 }
 
-void CPU::DEC(byte& r8) {
-    R.set_flag(FLAG_N);
-    R.update_flag(FLAG_H, ((r8 & 0xf) - 1) & 0x10);
-    R.update_flag(FLAG_Z, !(--R.a));
+void CPU::DEC(byte r8) {
+    R.set_flags("z1h-", OP_DEC, R.a);
+    R.a--;
     fetch();
 }
 
@@ -497,10 +456,8 @@ void CPU::DEC_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
+        R.set_flags("z1h-", OP_DEC, R.z);
         memory[R.hl] = R.z - 1;
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, ((R.z & 0xF) - 1) & 0x10);
-        R.update_flag(FLAG_Z, !(--R.z));
         break;
         case 2:
         fetch();
@@ -508,10 +465,9 @@ void CPU::DEC_HLptr() {
     }
 }
 
-void CPU::AND(byte& r8) {
-    R.a &= r8;
-    R.update_flag(FLAG_Z, R.a);
-    R.set_flags("-010");
+void CPU::AND(byte r8) {
+    R.a = R.a & r8;
+    R.set_flags("z010", OP_LGC, R.a);
     fetch();
 }
 
@@ -521,9 +477,8 @@ void CPU::AND_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.a &= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a & R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
@@ -535,18 +490,16 @@ void CPU::AND_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.a &= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a & R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
 }
 
-void CPU::OR (byte& r8) {
-    R.a |= r8;
-    R.update_flag(FLAG_Z, R.a);
-    R.set_flags("-010");
+void CPU::OR (byte r8) {
+    R.a = R.a | r8;
+    R.set_flags("z010", OP_LGC, R.a);
     fetch();
 }
 
@@ -556,9 +509,8 @@ void CPU::OR_HLptr () {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.a |= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a | R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
@@ -570,18 +522,16 @@ void CPU::OR_d8 () {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.a |= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a | R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
 }
 
-void CPU::XOR(byte& r8) {
-    R.a ^= r8;
-    R.update_flag(FLAG_Z, R.a);
-    R.set_flags("-010");
+void CPU::XOR(byte r8) {
+    R.a = R.a ^ r8;
+    R.set_flags("z010", OP_LGC, R.a);
     fetch();
 }
 
@@ -591,9 +541,8 @@ void CPU::XOR_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.a ^= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a ^ R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
@@ -605,17 +554,15 @@ void CPU::XOR_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.a ^= R.z;
-        R.update_flag(FLAG_Z, R.a);
-        R.set_flags("-010");
+        R.a = R.a ^ R.z;
+        R.set_flags("z010", OP_LGC, R.a);
         fetch();
         break;
     }
 }
 
 void CPU::CCF() {
-    R.flip_flag(FLAG_C);
-    R.set_flags("-00-");
+    R.set_flags("~00-");
     fetch();
 }
 
@@ -686,28 +633,34 @@ void CPU::DEC(word& r16) {
     }
 }
 
-void CPU::ADD_HL(word& r16) {
-        switch (tcycles >> 2) {
+void CPU::ADD_HL(word r16) {
+    switch (tcycles >> 2) {
         case 0:
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) + (r16 & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, (R.a + r16) > 0xFF);
-        // R.a += r8;
-        R.update_flag(FLAG_Z, !R.a);
-        fetch();
+        R.set_flags("-0hc", OP_ADD, R.l, r16 & 0xFF);
+        R.l = R.l + (r16 & 0xFF);
         break;
         case 1:
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xfff) + (r16 & 0xfff)) & 0x100));
-        R.update_flag(FLAG_C, (R.a + r8) > 0xFF);
-        // R.a += r8;
-        R.update_flag(FLAG_Z, !R.a);
-        fetch();
+        R.set_flags("-0hc", OP_ADC, R.h, r16 >> 8);
+        R.h = R.h + (r16 >> 8);
         fetch();
         break;
     }
 }
 
 void CPU::ADD_SP() {
-
+    switch (tcycles >> 2) {
+        case 0:
+        R.z = memory[R.pc++];
+        break;
+        case 1:
+        R.set_flags("00hc", OP_ADD, R.z, R.spl);
+        R.z = R.z + R.spl;
+        break;
+        case 2:
+        R.w = R.sph + R.get_flag(FLAG_C) + (R.z >> 7) * 0xFF;
+        break;
+        case 3:
+        R.sp = R.wz;
+        break;
+    }
 }

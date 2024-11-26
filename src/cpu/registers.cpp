@@ -28,7 +28,7 @@ void CPU::Registers::print_regs(std::ostream& output) {
 }
 
 void CPU::Registers::print_flags(std::ostream& output) {
-    output << "z\tn\th\tc" << std::endl;
+    output << "z n h c" << std::endl;
     output << get_flag(FLAG_Z) << " ";
     output << get_flag(FLAG_N) << " ";
     output << get_flag(FLAG_H) << " ";
@@ -80,6 +80,7 @@ void CPU::Registers::set_flags(const char *flagstr) {
         switch(flagstr[i]) {
             case '0': unset_flag(0x10 << (3 - i)); break;
             case '1': set_flag(0x10 << (3 - i)); break;
+            case '~': flip_flag(0x10 << (3 - i)); break;
         }
     }
 }
@@ -119,6 +120,9 @@ void CPU::Registers::set_flags(const char *flagstr, byte operation, byte op1, by
             break;
             case '1':
             set_flag(0x10 << (3 - i));
+            break;
+            case '~':
+            flip_flag(0x10 << (3 - i));
             break;
             case 'z':
             if (operation & (OP_ARTM | OP_IDU | OP_LGC))
