@@ -268,11 +268,8 @@ void CPU::LD_HL_SP() {
 
  // --SECTION-- 8-BIT ARITHMETIC
 void CPU::ADD(byte& r8) {
-    R.unset_flag(FLAG_N);
-    R.update_flag(FLAG_H, (((R.a & 0xf) + (r8 & 0xf)) & 0x10));
-    R.update_flag(FLAG_C, (R.a + r8) > 0xFF);
-    R.a += r8;
-    R.update_flag(FLAG_Z, !R.a);
+    R.set_flags("z0hc", R.a, r8);
+    R.a = R.a + r8;
     fetch();
 }
 
@@ -282,11 +279,8 @@ void CPU::ADD_HLptr() {
         R.z = memory[R.hl];
         break;
         case 1:
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) + (R.z & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, (R.a + R.z) > 0xFF);
-        R.a += R.z;
-        R.update_flag(FLAG_Z, !(R.a));
+        R.set_flags("z0hc", R.a, R.z);
+        R.a = R.a + R.z;
         fetch();
         break;
     }
@@ -298,11 +292,8 @@ void CPU::ADD_d8() {
         R.z = memory[R.pc++];
         break;
         case 1:
-        R.update_flag(FLAG_Z, !(R.a + R.z));
-        R.unset_flag(FLAG_N);
-        R.update_flag(FLAG_H, (((R.a & 0xf) + (R.z & 0xf)) & 0x10));
-        R.update_flag(FLAG_C, (R.a + R.z) > 0xFF);
-        R.a += R.z;
+        R.set_flags("z0hc", R.a, R.z);
+        R.a = R.a + R.z;
         fetch();
         break;
     }
@@ -701,7 +692,7 @@ void CPU::ADD_HL(word& r16) {
         R.unset_flag(FLAG_N);
         R.update_flag(FLAG_H, (((R.a & 0xf) + (r16 & 0xf)) & 0x10));
         R.update_flag(FLAG_C, (R.a + r16) > 0xFF);
-        R.a += r8;
+        // R.a += r8;
         R.update_flag(FLAG_Z, !R.a);
         fetch();
         break;
@@ -709,7 +700,7 @@ void CPU::ADD_HL(word& r16) {
         R.unset_flag(FLAG_N);
         R.update_flag(FLAG_H, (((R.a & 0xfff) + (r16 & 0xfff)) & 0x100));
         R.update_flag(FLAG_C, (R.a + r8) > 0xFF);
-        R.a += r8;
+        // R.a += r8;
         R.update_flag(FLAG_Z, !R.a);
         fetch();
         fetch();

@@ -207,37 +207,37 @@ bool CPU::handle_interrupt() {
             // std::cout << COUT_HEX_BYTE_DS(IF) << " " << COUT_HEX_BYTE_DS(IE)
         }
         switch (IF & IE) {
-            case INT_VBLANK:
-                std::cout << std::endl << "VBLANK IRQ" << std::endl;
-                std::cout << "> ";
+            case IRQ_VBLANK:
+                // std::cout << std::endl << "VBLANK IRQ" << std::endl;
+                // std::cout << "> ";
                 RST(0x40);
-                IF &= ~INT_VBLANK;
+                IF &= ~IRQ_VBLANK;
                 break;
-            case INT_LCD_STAT:
+            case IRQ_LCD_STAT:
                 // if (!last_stat_int) { // rising-edge detection
-                std::cout << std::endl << "STAT IRQ" << std::endl;
-                std::cout << "> ";
+                // std::cout << std::endl << "STAT IRQ" << std::endl;
+                // std::cout << "> ";
                 RST(0x48);
-                IF &= ~INT_LCD_STAT;
+                IF &= ~IRQ_LCD_STAT;
                 // }
                 break;
-            case INT_TIMER:
-                // std::cout << "INT_TIMER" << std::endl;
+            case IRQ_TIMER:
+                // std::cout << "IRQ_TIMER" << std::endl;
                 // std::cout << log();
                 memory[--(R.sp)] = R.pc >> 8;
                 memory[--(R.sp)] = R.pc;
                 R.pc = 0x50;
                 new_pc = 0x50;
-                IF &= ~INT_TIMER;
+                IF &= ~IRQ_TIMER;
                 // std::cout << log();
                 break;
-            case INT_SERIAL:
+            case IRQ_SERIAL:
                 RST(0x58);
-                IF &= ~INT_SERIAL;
+                IF &= ~IRQ_SERIAL;
                 break;
-            case INT_JOYPAD:
+            case IRQ_JOYPAD:
                 RST(0x60);
-                IF &= ~INT_JOYPAD;
+                IF &= ~IRQ_JOYPAD;
                 break;
             
             default:
@@ -247,9 +247,9 @@ bool CPU::handle_interrupt() {
     }
     else if (IE & IF) {
         switch (IE & IF) {
-            case INT_LCD_STAT:
+            case IRQ_LCD_STAT:
             break;
-            case INT_JOYPAD:
+            case IRQ_JOYPAD:
             break;
             default:
             is_halted = false;
@@ -296,7 +296,7 @@ void CPU::timer_tick() {
             TIMA = 0;
             tima_reload = true;
             tima_reload_pipe = 1;
-            IF |= INT_TIMER; // Why was this commented out?
+            IF |= IRQ_TIMER; // Why was this commented out?
         } else  {
             TIMA++;
         }

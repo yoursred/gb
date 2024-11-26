@@ -147,10 +147,10 @@ void PPU::tick() {
     curr_vblank_irq = (STAT & 3) == HBLANK;
 
     if (!last_stat_irq && curr_stat_irq) { // Rising edge detection
-        IF |= INT_LCD_STAT;
+        IF |= IRQ_LCD_STAT;
     }
     if (!last_vblank_irq && curr_vblank_irq)
-        IF |= INT_VBLANK;
+        IF |= IRQ_VBLANK;
     last_stat_irq = curr_stat_irq;
     last_vblank_irq = curr_vblank_irq;
 

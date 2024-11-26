@@ -15,16 +15,27 @@
 #define R_H MP(R.hl, R_HI)
 #define R_L MP(R.hl, R_LO)
 
+#define OP_ADD    0
+#define OP_SUB    1
+#define OP_ADC    2
+#define OP_SBC    4
+#define OP_ARTM   7
+#define OP_LGC    8
+#define OP_ADD16 16
+#define OP_INC   32
+#define OP_DEC   64
+#define OP_IDU   96
+
 #define EI_0 1
 #define EI_1 2
 #define DI_0 4
 #define DI_1 8
 
-#define INT_VBLANK    1
-#define INT_LCD_STAT  2
-#define INT_TIMER     4
-#define INT_SERIAL    8
-#define INT_JOYPAD   16
+#define IRQ_VBLANK    1
+#define IRQ_LCD_STAT  2
+#define IRQ_TIMER     4
+#define IRQ_SERIAL    8
+#define IRQ_JOYPAD   16
 
 #define TAC_ENABLE 4
 #define TAC_CS 0x3
@@ -107,6 +118,8 @@ class CPU {
         int get_flag(byte flag);
         int get_cc(byte cc);
         void set_flags(const char *flagstr);
+        void set_flags(const char *flagstr, byte operation, byte op1, byte op2 = 1);
+
     };
 
     CPU::Registers R;

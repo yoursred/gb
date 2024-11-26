@@ -83,3 +83,55 @@ void CPU::Registers::set_flags(const char *flagstr) {
         }
     }
 }
+
+void CPU::Registers::set_flags(const char *flagstr, byte operation, byte op1, byte op2) {
+    word result = 0;
+    byte h = 0; 
+    switch (operation) {
+        case OP_ADD:
+        case OP_ADD16:
+        case OP_INC:
+        result = op1 + op2;
+        h = ((op1 & 0xF) + (op2 & 0xF)) & 0x10;
+        break;
+        case OP_DEC:
+        case OP_SUB:
+        result = op1 - op2;
+        h = ((op1 & 0xF) - (op2 & 0xF)) & 0x10;
+        break;
+        case OP_ADC:
+        result = op1 + op2 + get_flag(FLAG_C);
+        h = ((op1 & 0xF) + (op2 & 0xF) + get_flag(FLAG_H)) & 0x10;
+        break;
+        case OP_SBC:
+        result = op1 - op2;
+        h = ((op1 & 0xF) - (op2 & 0xF) - get_flag(FLAG_C)) & 0x10;
+        break;
+        case OP_LGC:
+        result = op1;
+        break;
+    }
+
+    for (int i = 0; flagstr[i] != 0 && i < 4; i++){
+        switch(flagstr[i]) {
+            case '0':
+            unset_flag(0x10 << (3 - i));
+            break;
+            case '1':
+            set_flag(0x10 << (3 - i));
+            break;
+            case 'z':
+            if (operation & (OP_ARTM | OP_IDU | OP_LGC))
+                update_flag(FLAG_Z, !!result);
+            break;
+            case 'h':
+            if (operation & (OP_ARTM | OP_IDU | OP_ADD16))
+                update_flag(FLAG_H, h);
+            break;
+            case 'c':
+            if (operation & (OP_ARTM | OP_ADD16))
+                update_flag(FLAG_C, result & 0x100);
+            break;
+        }
+    }
+}
