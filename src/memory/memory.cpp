@@ -94,9 +94,9 @@ byte Memory::read(word address) {
     // }
     address &= 0xFFFF;
     // return Memory::MBC1_read(address);
-    // if (address == 0xFF44) {
-    //     return 0x90; // More clown behavior
-    // }
+    if (address == 0xFF44) {
+        return 0x90; // More clown behavior
+    }
     if (address < 0x100 && boot_rom)
         return BOOTROM[address];
     if (address < 0x4000) {
@@ -120,6 +120,8 @@ byte Memory::read(word address) {
         return 0xFF;
     if (address == 0xFF00)
         return 0xFF;
+    if (address == 0xFF04)
+        return cpu->DIV;
     if (address < 0xFF80)
         return IO_R[address - 0xFF00];
     if (address < 0xFFFF)
@@ -173,12 +175,13 @@ void Memory::write(word address, byte value) {
     mem_writes.push_back(mem_write(cpu_steps, address, value));
 
     if (address == 0xFF02 && value == 0x81) { // Basic serial output
-        std::cout << (char) IO_R[01];
+        std::cout << (char) IO_R[1];
+        if (IO_R[1] == '\n')
+            std::cout << "> ";
         // fflush(stdout);
     }
     if (address == 0xFF04) {
         cpu->div_timer = 0;
-        IO_R[04] = 0;
     }
     if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
         std::cout << "ILLEGAL WRITE" << std::endl;
@@ -302,10 +305,11 @@ void Memory::raw_write(word address, byte value) {
         IE = value;
 }
 
-Memory::MemoryProxy Memory::operator[](const word value) {
-    return Memory::MemoryProxy(this, value);
-}
+// byte& Memory::operator[](const word value) {
+//     // return read(value);
+//     // return Memory::MemoryProxy(this, value);
+// }
 
-Memory::MemoryProxy Memory::operator[](const word* value) {
-    return Memory::MemoryProxy(this, *value);
-}
+// byte Memory::operator[](const word* value) {
+//     // return Memory::MemoryProxy(this, *value);
+// }

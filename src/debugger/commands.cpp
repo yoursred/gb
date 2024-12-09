@@ -180,7 +180,7 @@ void Debugger::cmd_state() {
 void Debugger::cmd_step() {
     if (state == DBG_PAUSED) {
         cpu.step();
-        for (i = 0; i < cpu.current_cycles; i++) {
+        for (i = 0; i < cpu.current_tcycles; i++) {
             ppu.tick();
         }
         print_instruction(cpu);

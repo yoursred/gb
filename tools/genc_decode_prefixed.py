@@ -2,7 +2,7 @@ import json
 
 __ = lambda _: 2 if 'operand2' in _ else (1 if 'operand1' in _ else 0)
 
-op = lambda _: 'R.' + _.lower() if _ in ('A', 'B', 'C', 'D', 'E', 'H', 'L') else _ if _.isnumeric() else 'mem_at(R.hl)'
+op = lambda _: 'R.' + _.lower() if _ in ('A', 'B', 'C', 'D', 'E', 'H', 'L') else _
 
 def template(opc, d: dict):
     # if d is None:
@@ -11,9 +11,15 @@ def template(opc, d: dict):
     if d is None:
         return ''
     if __(d) == 2:
-        return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}, {op(d["operand2"])}); break;'
+        if "HL" in d["operand2"]:
+            return f'        // case ({opc}): CPU::{d["mnemonic"]}_HLptr({op(d["operand1"])}); break;'
+        else:
+            return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}, {op(d["operand2"])}); break;'
     else:
-        return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}); break;'
+        if "HL" in d["operand1"]:
+            return f'        // case ({opc}): CPU::{d["mnemonic"]}_HLptr(); break;'
+        else:
+            return f'        // case ({opc}): CPU::{d["mnemonic"]}({op(d["operand1"])}); break;'
 
 
 with open('opcodes.json', 'rb') as fp:

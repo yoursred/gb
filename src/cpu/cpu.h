@@ -15,16 +15,16 @@
 #define R_H MP(R.hl, R_HI)
 #define R_L MP(R.hl, R_LO)
 
-#define OP_ADD    0
-#define OP_SUB    1
-#define OP_ADC    2
-#define OP_SBC    4
-#define OP_ARTM   7
-#define OP_LGC    8
-#define OP_ADD16 16
-#define OP_INC   32
-#define OP_DEC   64
-#define OP_IDU   96
+#define OP_ADD    1
+#define OP_SUB    2
+#define OP_ADC    4
+#define OP_SBC    8
+#define OP_ARTM  15
+#define OP_LGC   16 
+#define OP_ADD16 32
+#define OP_INC   64
+#define OP_DEC   128
+#define OP_IDU   192
 
 #define EI_0 1
 #define EI_1 2
@@ -43,7 +43,7 @@
 class CPU {
     public:
     // Registers registers;
-    // byte memory[0x10000] = {0};
+    // byte memory.write(0x10000, {0});
     Memory& memory;
 
     CPU(Memory& memory);
@@ -54,19 +54,21 @@ class CPU {
     word working_word = 0;
     
     word new_pc = 0x100;
-    byte current_cycles = 0;
-    byte mcycles, tcycles = 0;
+    byte tcycles = 0;
+    byte current_tcycles = 0;
+    byte prefixed_fetch = 0;
+    bool cc_check = false;
     unsigned long cycles = 0;
     unsigned long instructions = 0;
 
     // Interrupt stuff
-    bool is_halted = false;
+    bool halted = false;
     bool ime = false;
     byte ime_buffer = 0;
     byte &IF, &IE;
     bool last_stat_int = false; // This is to detect a rising edge
     bool last_joyp_int = false;
-    bool int_trig = false;
+    byte interrupt = 0;
 
     // Timer stuff
     // TODO: Move to separate file/class
@@ -81,6 +83,9 @@ class CPU {
     bool last_div_bit = false;
     bool tima_reload = false;
     byte tima_reload_pipe = 0;
+
+    std::stringstream doctor_log;
+    size_t log_lines = 4418120;
 
 
     
@@ -105,7 +110,22 @@ class CPU {
     class Registers {
         public:
         word af, bc, de, hl, sp, pc, wz;
-        byte &a, &f, &b, &c, &d, &e, &h, &l, &spl, &sph, &z, &w;
+        byte &a, &f, &b, &c, &d, &e, &h, &l;
+        byte &sph, &spl, &pch, &pcl, &w, &z;
+        // byte& a = *((byte*) &af + 1);
+        // byte& f = *((byte*) &af);
+        // byte& b = *((byte*) &bc + 1);
+        // byte& c = *((byte*) &bc);
+        // byte& d = *((byte*) &de + 1);
+        // byte& e = *((byte*) &de);
+        // byte& h = *((byte*) &hl + 1);
+        // byte& l = *((byte*) &hl);
+        // byte& sph = *((byte*) &sp + 1);
+        // byte& spl =< *((byte*) &sp);
+        // byte& pch = *((byte*) &pc + 1);
+        // byte& pcl = *((byte*) &pc);
+        // byte& w = *((byte*) &wz + 1);
+        // byte& z = *((byte*) &wz);
 
         Registers();
 
@@ -122,14 +142,16 @@ class CPU {
 
     };
 
-    CPU::Registers R;
+    CPU::Registers R = Registers();
 
     std::string log();
+    std::string log_dr();
 
     private:
     // --SECTION-- 8-BIT LOADS
-    void LD(byte r8, byte& r8p); void LD(byte& r8);
+    void LD(byte& r8, byte r8p); void LD(byte& r8);
     void LD(byte& r8, word r16ptr); void LD(word r16ptr, byte r8);
+    void LD_HLptr_d8();
     void LD_A_d16ptr(); void LD_d16ptr_A();
     void LDH_A_Cptr(); void LDH_Cptr_A();
     void LDH_A_d8ptr(); void LDH_d8ptr_A();
@@ -142,6 +164,7 @@ class CPU {
     void LD_SP_HL();
     void PUSH(word r16);
     void POP(word& r16);
+    void POP_AF();
     void LD_HL_SP();
 
     // --SECTION-- 8-BIT ARITHMETIC
@@ -150,8 +173,8 @@ class CPU {
     void SUB(byte r8); void SUB_HLptr(); void SUB_d8();
     void SBC(byte r8); void SBC_HLptr(); void SBC_d8();
     void CP (byte r8); void CP_HLptr (); void CP_d8 ();
-    void INC(byte r8); void INC_HLptr(); void INC_d8();
-    void DEC(byte r8); void DEC_HLptr(); void DEC_d8();
+    void INC(byte& r8); void INC_HLptr(); // void INC_d8();
+    void DEC(byte& r8); void DEC_HLptr(); // void DEC_d8();
     void AND(byte r8); void AND_HLptr(); void AND_d8();
     void OR (byte r8); void OR_HLptr (); void OR_d8 ();
     void XOR(byte r8); void XOR_HLptr(); void XOR_d8();
@@ -164,17 +187,20 @@ class CPU {
     void ADD_SP();
 
     // --SECTION-- BIT OPS
+    void CBPREFIX();
     void RLCA(); void RRCA();
     void RLA (); void RRA ();
     void RLC (byte& r8); void RLC_HLptr ();
+    void RRC (byte& r8); void RRC_HLptr ();
+    void RL  (byte& r8); void RL_HLptr  ();
     void RR  (byte& r8); void RR_HLptr  ();
     void SLA (byte& r8); void SLA_HLptr ();
     void SRA (byte& r8); void SRA_HLptr ();
     void SWAP(byte& r8); void SWAP_HLptr();
     void SRL (byte& r8); void SRL_HLptr ();
-    void BIT (byte& r8); void BIT_HLptr ();
-    void RES (byte& r8); void RES_HLptr ();
-    void SET (byte& r8); void SET_HLptr ();
+    void BIT (byte u3, byte r8); void BIT_HLptr (byte u3);
+    void RES (byte u3, byte& r8); void RES_HLptr (byte u3);
+    void SET (byte u3, byte& r8); void SET_HLptr (byte u3);
 
     // --SECTION-- JUMPS
     void JP(); void JP_HL(); void JP(byte cc);
@@ -182,6 +208,7 @@ class CPU {
     void CALL(); void CALL(byte cc);
     void RET(); void RET(byte cc); void RETI();
     void RST(byte vector);
+    void INT(byte vector);
 
     // --SECTION-- MISC
     void HALT();

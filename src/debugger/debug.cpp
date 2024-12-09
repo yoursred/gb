@@ -28,7 +28,7 @@ void Debugger::debug_thread() {
     std::chrono::duration<double, std::micro> dt;
     std::chrono::duration<double, std::micro> frame = std::chrono::microseconds(16742);
 
-    // std::ofstream out("doctor_log.txt");
+    std::ofstream out("doctor_log.txt");
     // std::stringstream doctor_log;
     // size_t lines = 0;
 
@@ -47,26 +47,30 @@ void Debugger::debug_thread() {
                 if (ppu.LY == 0 && ppu.x == 0)
                     t0 = std::chrono::high_resolution_clock::now();
                 // if (lines < 47932) {
-                //     doctor_log << cpu.log();
+                //     if (cpu.tcycles == 0)
+                //         doctor_log << cpu.log();
                 //     lines++;
                 // }
-                cpu.step();
-                for (i = 0; i < cpu.current_cycles; i++) {
-                    if (ppu.LY == 0 && ppu.ticks == 0)
-                        t0 = std::chrono::high_resolution_clock::now();
-                    ppu.tick();
-                    if (ppu.LY == 152 && ppu.ticks == 455) {
-                        t1 = std::chrono::high_resolution_clock::now();
-                        dt = t1 - t0;
-                        std::this_thread::sleep_for(frame - dt);
-                    }
+                // if (ppu.LY == 0 && ppu.ticks == 0)
+                //     t0 = std::chrono::high_resolution_clock::now();
+                cpu.tick();
+                ppu.tick();
+                // if (cpu.log_lines == 0)
+                //     state = DBG_END;
+                if (ppu.LY == 152 && ppu.ticks == 455) {
+                    t1 = std::chrono::high_resolution_clock::now();
+                    dt = t1 - t0;
+                    // std::this_thread::sleep_for(frame - dt);
                 }
+                // for (i = 0; i < cpu.current_tcycles; i++) {
+                //     }
+                // }
             }
         }
     }
 
-    // out << doctor_log.rdbuf();
-    // out.close();
+    out << cpu.doctor_log.rdbuf();
+    out.close();
 }
 
 void Debugger::render_thread() {

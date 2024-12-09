@@ -1,7 +1,7 @@
 import json
 
 __ = lambda _: 2 if 'operand2' in _ else (1 if 'operand1' in _ else 0)
-___ = lambda _: _[0] if len(_) == 1 else 0
+___ = lambda _: int(_[0]) - 4
 
 def template(d: dict):
     if d is None:

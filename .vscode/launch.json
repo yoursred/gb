@@ -12,7 +12,7 @@
             "args": [
                 // "bootrom",
                 "debug",
-                "roms/game-boy-test-roms-v7.0/dmg-acid2/dmg-acid2.gb",
+                "roms/cpu_instrs/individual/02-interrupts.gb",
                 "dmg_boot.bin"
             ],
             "stopAtEntry": false,

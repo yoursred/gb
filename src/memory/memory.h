@@ -177,8 +177,10 @@ class Memory {
         // }
     };
 
-    MemoryProxy operator[](const word value);
-    MemoryProxy operator[](const word* value);
+    // MemoryProxy operator[](const word value);
+    // MemoryProxy operator[](const word* value);
+    // byte& operator[](const word value);
+    // byte operator[](const word* value);
 
     // byte raw(word address);
 };

@@ -120,14 +120,15 @@ int main(int argc, const char* argv[]) {
     // else
     // Memory cart = Memory(bootrom);
     Memory cart = Memory(bootrom, rom, buf_rom.st_size);
+    cart.boot_rom = false;
     CPU cpu(cart);
-    cpu.R.pc = 0;
-    cpu.new_pc = 0;
-    cpu.R.af = 0;
-    cpu.R.bc = 0;
-    cpu.R.de = 0;
-    cpu.R.hl = 0;
-    cpu.R.sp = 0;
+    // cpu.R.pc = 0;
+    // cpu.new_pc = 0;
+    // cpu.R.af = 0;
+    // cpu.R.bc = 0;
+    // cpu.R.de = 0;
+    // cpu.R.hl = 0;
+    // cpu.R.sp = 0;
     cart.cpu = &cpu;
     PPU ppu(cart);
     Debugger dbg(cart, cpu, ppu);

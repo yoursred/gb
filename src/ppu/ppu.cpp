@@ -150,7 +150,7 @@ void PPU::tick() {
         IF |= IRQ_LCD_STAT;
     }
     if (!last_vblank_irq && curr_vblank_irq)
-        IF |= IRQ_VBLANK;
+        // IF |= IRQ_VBLANK;
     last_stat_irq = curr_stat_irq;
     last_vblank_irq = curr_vblank_irq;
 

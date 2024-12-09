@@ -10,6 +10,7 @@ CPU::Registers::Registers():
     d(*((byte*) &de + 1)), e(*((byte*) &de)),
     h(*((byte*) &hl + 1)), l(*((byte*) &hl)),
     sph(*((byte*) &sp + 1)), spl(*((byte*) &sp)),
+    pch(*((byte*) &pc + 1)), pcl(*((byte*) &pc)),
     w(*((byte*) &wz + 1)), z(*((byte*) &wz))
 {
     af = 0x1B0; bc = 0x13; de = 0xD8;
@@ -88,6 +89,7 @@ void CPU::Registers::set_flags(const char *flagstr) {
 void CPU::Registers::set_flags(const char *flagstr, byte operation, byte op1, byte op2) {
     word result = 0;
     byte h = 0; 
+    // op2 = operation == OP_INC;
     switch (operation) {
         case OP_ADD:
         case OP_ADD16:
@@ -102,10 +104,10 @@ void CPU::Registers::set_flags(const char *flagstr, byte operation, byte op1, by
         break;
         case OP_ADC:
         result = op1 + op2 + get_flag(FLAG_C);
-        h = ((op1 & 0xF) + (op2 & 0xF) + get_flag(FLAG_H)) & 0x10;
+        h = ((op1 & 0xF) + (op2 & 0xF) + get_flag(FLAG_C)) & 0x10;
         break;
         case OP_SBC:
-        result = op1 - op2;
+        result = op1 - op2 - get_flag(FLAG_C);
         h = ((op1 & 0xF) - (op2 & 0xF) - get_flag(FLAG_C)) & 0x10;
         break;
         case OP_LGC:
@@ -126,7 +128,7 @@ void CPU::Registers::set_flags(const char *flagstr, byte operation, byte op1, by
             break;
             case 'z':
             if (operation & (OP_ARTM | OP_IDU | OP_LGC))
-                update_flag(FLAG_Z, !!result);
+                update_flag(FLAG_Z, !(result & 0xFF));
             break;
             case 'h':
             if (operation & (OP_ARTM | OP_IDU | OP_ADD16))

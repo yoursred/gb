@@ -8,7 +8,7 @@
 #endif
 
 /* You are not expected to understand this. */
-#define IS_BIG_ENDIAN (*(std::uint16_t *)”\0\xff” < 0x100)
+#define IS_BIG_ENDIAN (*(std::uint16_t *)"\0\xff" < 0x100)
 
 #define FLAG_Z 0x80
 #define FLAG_N 0x40
