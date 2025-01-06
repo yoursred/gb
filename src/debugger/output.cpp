@@ -75,7 +75,7 @@ void dumphex(Memory& data, word start, word len, std::ostream& output) {
             output << "   ";
         }
         else {
-            output << COUT_HEX_BYTE((word) data[i]) << " ";
+            output << COUT_HEX_BYTE((word) data.raw_read(i)) << " ";
         }
 
         if ((i+1) % 8 == 0 || i+1 == (end)) {

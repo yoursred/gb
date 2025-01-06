@@ -51,6 +51,7 @@ enum rwatch {
     wread = 0x100, wmem = 0x101, wwrite = 0x110
 };
 
+
 /* TODO: inherit from this struct to allow for any kind of breakpoint
 low priority because the current ones pretty much cover everything*/
 struct Breakpoint {
@@ -89,6 +90,7 @@ class Debugger {
     PPU& ppu;
 
     sf::RenderWindow window; // = sf::RenderWindow(sf::VideoMode(160, 144), "boygame debooger - version");
+    
     sf::Texture texture;
 
 
@@ -101,6 +103,7 @@ class Debugger {
 
     private:
     void debug_thread();
+    void event_thread();
     void render_thread();
 
     std::vector<std::string> commands = {

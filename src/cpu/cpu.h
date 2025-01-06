@@ -70,8 +70,9 @@ class CPU {
     bool tima_reload = false;
     byte tima_reload_pipe = 0;
 
-
-    
+    bool& oam_dma;
+    byte& dma_start;
+    byte dma_index = 0;
 
     byte fetch_instruction();
     byte prefetch();
@@ -83,6 +84,8 @@ class CPU {
 
     void cycle(byte count);
     void timer_tick();
+
+    void dma_transfer();
 
     #ifdef __GHOST_DEBUG
     size_t memory_writes = 0;

@@ -24,7 +24,6 @@ void Debugger::cmd_break(std::vector<std::string> argv) {
         }
         break;
         case 2:
-        // if (str())
         if (!str(argv[1], Debugger::break_types)) {
             output << "Argument error: `" << argv[1];
             output << "` not a valid register name!" << std::endl;
