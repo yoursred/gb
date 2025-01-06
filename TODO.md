@@ -2,14 +2,16 @@
 - [x] 0xCB prefixed instruction fetching
 - [x] Cycle counting
 - [x] Create a separate memory class that allows bank switching and a more accurate databus
-- [x] Graphics (still WIP)
+- [x] Graphics (mostly done for dmg)
+- [x] Raw `Memory` read and write functions for debugging
+- [x] Finish debugger (Add more commands)
+- [x] Control execution speed (can lock it at 60fps for now)
+- [ ] Break up `Memory` class
 - [ ] Abandon cycle counting, revert back to monke and get accurate-ish timing
-- [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects
-- [ ] Finish debugger (WIP)
-- [ ] Raw `Memory` read and write functions for debugging
-- [ ] Control execution speed
+- [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects (Look at `Debugger` for inspiration)
 - [ ] Documentation and useful comments (there are comments of dubious value all over)
 - [ ] Touch up python tools to always generate usable code
 - [ ] Add unit tests
-- [ ] C++-ify
-- [ ] Add command to dump framebuffer
+- [ ] C++-ify (SFML 3.0 requires C++17)
+- [ ] Add command to dump framebuffer or screenshot
+- [ ] Robust `PPU` frame debugger

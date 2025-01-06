@@ -19,7 +19,9 @@ CPU::CPU(Memory& memory):
     DIV(*((byte*) &div_timer + 1)),
     TIMA(memory.IO_R[5]),
     TMA(memory.IO_R[6]),
-    TAC(memory.IO_R[7])
+    TAC(memory.IO_R[7]),
+    dma_start(memory.IO_R[0x46]),
+    oam_dma(memory.dma)
 {
     // CPU::R( = CPU::Registers());
     // CPU::R = Registers();
@@ -43,14 +45,6 @@ CPU::CPU(Memory& memory):
     // fetch();
 }
 
-// byte* CPU::mem_at(word* address) {
-//     return &memory.read(*address);
-// }
-
-// byte* CPU::mem_at(word address) {
-//     return &memory.read(address);
-// }
-
 byte CPU::fetch_instruction() {
     CPU::opcode = memory.read(R.pc);
     byte length;
@@ -61,7 +55,6 @@ byte CPU::fetch_instruction() {
         length = get_length_prefixed(CPU::opcode); // Wholly redundant, it's always =2
         CPU::current_tcycles = get_cycles_prefixed(CPU::opcode);
     }
-    // printf("opc=0x%02X, length=%d\n", CPU::opcode, length);
     switch (length) { // maybe we don't really need this?
         case 3:
             working_word = memory.read(R.pc + 1);
@@ -71,7 +64,6 @@ byte CPU::fetch_instruction() {
             working_byte = memory.read(R.pc + 1);
             break;
     }
-    // printf("wb = 0x%02X, ww = 0x%04X\n", working_byte, working_word);
     return length;
 }
 
@@ -172,20 +164,15 @@ void CPU::step() {
 
         for (byte i = 0; i < current_tcycles; i++) {
             timer_tick();
+            if (oam_dma) {
+                for (byte j = 0; j < 4; j++)
+                dma_transfer();
+            }
         }
 
         switch (opcode) {
             case (0x00): break;
-            // case (0xB6):
-            //     timer_tick();
-            //     timer_tick();
-            //     timer_tick();
-            //     timer_tick();
-            //     timer_tick();
-            //     timer_tick();
-            //     decode();
-            //     break;
-            // case (0xCB): decode_prefixed(); break;
+            case (0xCB): decode_prefixed(); break;
             default: decode();
         }
         // } else {
@@ -206,6 +193,9 @@ void CPU::step() {
         current_tcycles = 4;
         for (byte i = 0; i < current_tcycles; i++) {
             timer_tick();
+            if (oam_dma) {
+                dma_transfer();
+            }
         }
     }
     instructions++;
@@ -360,6 +350,19 @@ void CPU::timer_tick() {
     }
     last_div_bit = div_bit;
     tima_reload_pipe++;
+}
+
+void CPU::dma_transfer() {
+    word dma_src = (dma_start << 8) | dma_index;
+    // std::cout << "Executing DMA copy from " << COUT_HEX_WORD_DS(dma_src);
+    // std::cout << " (" << COUT_HEX_BYTE_DS(memory.raw_read(dma_src)) << ")" << std::endl;
+    memory.raw_write(0xFE00 | dma_index, memory.raw_read(dma_src));
+    // std::cout << "Result at " << COUT_HEX_WORD_DS((0xFE00 | dma_index));
+    // std::cout << ": " << COUT_HEX_BYTE_DS(memory.raw_read(0xFE00 | dma_index)) << std::endl;
+    if (++dma_index == 0xA0) {
+        oam_dma = false;
+        dma_index = 0;
+    }
 }
 
 std::string CPU::log() {

@@ -1,8 +1,7 @@
 # Basic bitch makefile
 
 
-# TODO: How do you do this?
-# override CXXFLAGS += -D__GHOST_DEBUG 
+# TODO: Make a good makefile
 GPP=g++ 
 # x86_64-apple-darwin21-g++-12
 
@@ -10,9 +9,9 @@ SRCDIR=src
 INCL=$(SRCDIR)
 FILES=$(wildcard $(SRCDIR)/*.cpp)
 BUILDDIR=build
-VERSION=\"0.0.0_$(shell git rev-parse --short HEAD)\"
+VERSION=\"0.0.1_$(shell git rev-parse --short HEAD)\"
 
-CXXFLAGS=-lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -I$(INCL) -g -Wall -Wextra -std=c++11 -DVERSION=$(VERSION)
+CXXFLAGS=-lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -I$(INCL) -g -Wall -Wextra -std=c++17 -DVERSION=$(VERSION)
 
 .PHONY: clean
 

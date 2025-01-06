@@ -84,10 +84,11 @@ class CPU {
     bool tima_reload = false;
     byte tima_reload_pipe = 0;
 
-    std::stringstream doctor_log;
+    bool& oam_dma;
+    byte& dma_start;    std::stringstream doctor_log;
     size_t log_lines = 4418120;
 
-
+    byte dma_index = 0;
     
     byte fetch();
     byte fetch_instruction();
@@ -102,6 +103,8 @@ class CPU {
     void tick();
     void cycle(byte count);
     void timer_tick();
+
+    void dma_transfer();
 
     #ifdef __GHOST_DEBUG
     size_t memory_writes = 0;

@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <SFML/Window/Keyboard.hpp>
 
 class CPU;
 
@@ -55,20 +56,71 @@ struct mem_read {
 #define R_HI 1
 
 
-/*  Start	End     Description         	        Notes
-    0000	3FFF	16 KiB ROM bank 00	            From cartridge, usually a fixed bank
-    4000	7FFF	16 KiB ROM Bank 01~NN	        From cartridge, switchable bank via mapper (if any)
-    8000	9FFF	8 KiB Video RAM (VRAM)	        In CGB mode, switchable bank 0/1
-    A000	BFFF	8 KiB External RAM	            From cartridge, switchable bank if any
-    C000	CFFF	4 KiB Work RAM (WRAM)	
-    D000	DFFF	4 KiB Work RAM (WRAM)	        In CGB mode, switchable bank 1~7
-    E000	FDFF	Mirror of C000~DDFF (ECHO RAM)	Nintendo says use of this area is prohibited.
-    FE00	FE9F	Sprite attribute table (OAM)	
-    FEA0	FEFF	Not Usable                      Nintendo says use of this area is prohibited
-    FF00	FF7F	I/O Registers	
-    FF80	FFFE	High RAM (HRAM)	
-    FFFF	FFFF	Interrupt Enable register (IE)	
+/*  Start	End 	Size	Description                 	Notes
+       0	3FFF	4000	16 KiB ROM bank 00          	From cartridge, usually a fixed bank
+    4000	7FFF	4000	16 KiB ROM Bank 01~NN       	From cartridge, switchable bank via mapper (if any)
+    8000	9FFF	2000	8 KiB Video RAM (VRAM)      	In CGB mode, switchable bank 0/1
+    A000	BFFF	2000	8 KiB External RAM          	From cartridge, switchable bank if any
+    C000	CFFF	1000	4 KiB Work RAM (WRAM)	
+    D000	DFFF	1000	4 KiB Work RAM (WRAM)       	In CGB mode, switchable bank 1~7
+    E000	FDFF	1E00	Mirror of C000~DDFF (ECHO RAM)	Nintendo says use of this area is prohibited.
+    FE00	FE9F	  A0	Sprite attribute table (OAM)	
+    FEA0	FEFF	  60	Not Usable                  	Nintendo says use of this area is prohibited
+    FF00	FF7F	  80	I/O Registers	
+    FF80	FFFE	  7F	High RAM (HRAM)	
+    FFFF	FFFF	  1	Interrupt Enable register (IE)	
 */
+
+// Memory offsets for address translation
+#define BOOT_ROM_START       0x0
+#define ROM_BANK_00_START    0x0
+#define ROM_BANK_NN_START 0x4000
+#define VRAM_START        0x8000                       
+#define ERAM_START        0xA000
+#define WRAM_START        0xC000
+#define ECHO_RAM_START    0xE000
+#define OAM_T_START       0xFE00
+#define ILLEGAL_START     0xFEA0
+#define IO_R_START        0xFF00
+#define HRAM_START        0xFF80
+
+#define BOOT_ROM_END    0x100
+#define ROM_BANK_00_END 0x4000
+#define ROM_BANK_NN_END 0x8000
+#define VRAM_END        0xA000
+#define VRAM_CART_END   0xC000
+#define ERAM_END        0xD000
+#define WRAM_BANK_0_END 0xE000
+#define ECHO_RAM_END    0xFE00
+#define OAM_T_END       0xFEA0
+#define ILLEGAL_END     0xFF00
+#define IO_R_END        0xFF80
+#define HRAM_END        0xFFFF
+
+#define DPAD 2
+#define BTNS 1
+
+typedef struct buttons {
+    bool a, b, start, select;
+    bool up, down, left, right;
+    bool polled, delivered;
+
+    void update(bool (&isKeyPressed)(sf::Keyboard::Key));
+    std::string str();
+} buttons;
+
+typedef struct joyp {
+    byte a_right: 1;
+    byte b_left: 1;
+    byte select_up: 1;
+    byte start_down: 1;
+    // bool dpad: 1;
+    // bool buttons: 1;
+    byte mode: 2;
+    byte: 2;
+
+    void update(buttons src);
+} joyp;
 
 class Memory {
     public:
@@ -78,10 +130,18 @@ class Memory {
     byte VRAM   [0x2000] = {0xFF}; // more clown behaviour
     byte ERAM   [0x2000] = {0xFF}; // MBC5 supports up to 16 RAM banks
     byte WRAM   [0x2000] = {0xFF};
-    byte OAM_T   [0x100] = {0xFF};
+    byte OAM_T   [0xA0] = {0xFF};
     byte IO_R     [0x80] = {0xFF};
     byte HRAM     [0x7F] = {0};
     byte IE;
+
+    buttons btns = {
+        false, false, false, false,
+        false, false, false, false,
+        false, false
+    };
+    joyp JOYP;
+    // bool joyp_wait = false;
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;
 
@@ -94,6 +154,8 @@ class Memory {
     word rom_banks = 0;
     byte ram_banks = 0;
     bool boot_rom = false;
+
+    bool dma = false;
 
     byte mode;
 

@@ -1,7 +1,56 @@
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 #include "memory/memory.h"
 #include "cpu/cpu.h"
+
+void buttons::update(bool (&isKeyPressed)(sf::Keyboard::Key)) {
+    a = isKeyPressed(sf::Keyboard::Key::X);
+    b = isKeyPressed(sf::Keyboard::Key::Z);
+    select = isKeyPressed(sf::Keyboard::Key::Backspace);
+    start = isKeyPressed(sf::Keyboard::Key::Enter);
+    right = isKeyPressed(sf::Keyboard::Key::Right);
+    left = isKeyPressed(sf::Keyboard::Key::Left);
+    up = isKeyPressed(sf::Keyboard::Key::Up);
+    down = isKeyPressed(sf::Keyboard::Key::Down);
+    delivered = true; // With love
+}
+
+void joyp::update(buttons src) {
+    a_right = true;
+    b_left = true;
+    select_up = true;
+    start_down = true;
+    switch (mode) {
+        case BTNS:
+            a_right = !src.a;
+            b_left = !src.b;
+            select_up = !src.select;
+            start_down = !src.start;
+        break;
+        case DPAD:
+            a_right = !(!src.left && src.right);
+            b_left = !(!src.right && src.left);
+            select_up = !(!src.down && src.up);
+            start_down = !(!src.up && src.down);
+        break;
+    }
+}
+
+std::string buttons::str() {
+    /*
+       ^        A  B
+    <  O  >      
+       v    ST SL
+    */
+    std::stringstream s;
+
+    s << "   " << (up ? '^' : ' ') << "        " << (a ? 'A' : ' ') << "  " << (b ? 'B' : ' ') << std::endl;
+    s << (left ? '<' : ' ') << "  O  " << (right ? '>' : ' ') << std::endl;
+    s << "   " << (down ? 'v' : ' ') << "    " << (start ? "ST" : "  ") << ' ' << (select ? "SL" : "  ") << std::endl;
+
+   return s.str();
+}
 
 Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
     // prox = MemoryProxy();
@@ -66,6 +115,11 @@ Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
         boot_rom = true;
     }
     std::memcpy(BANKS, ROM, size);
+
+    JOYP = {
+        1, 1, 1, 1,
+        3
+    };
 }
 
 Memory::Memory(byte BOOTROM[]) {
@@ -84,29 +138,66 @@ byte Memory::read(word address) {
         last_read_flag = true;
     }
 
-    if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
-        std::cout << "ILLEGAL WRITE" << std::endl;
-    // mem_reads.push_back
-    // for (byte i = 0; i < 4; i++) { // TODO: revisit this tomfoolery, it looks like past me
-                                      //       might have been in the kitchen and just didn't
-                                      //       know he was baking
-    //     cpu->timer_tick();
+    // if (dma && (address < 0xFF80)) {
+    //     return 0xFF;
     // }
-    address &= 0xFFFF;
+
+    // if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
+    //     std::cout << "ILLEGAL WRITE" << std::endl;
+    // address &= 0xFFFF;
     // return Memory::MBC1_read(address);
-    if (address == 0xFF44) {
-        return 0x90; // More clown behavior
+    // if (address == 0xFF44) {
+    //     return 0x90; // More clown behavior
+    // }
+    /* TODO: WIP
+    switch (address & 0xE000) {
+        case (ROM_BANK_00_START):
+            if (address < BOOT_ROM_END && boot_rom) {
+                return BOOTROM[address];
+            }
+            return BOOTROM[address];
+        case (ROM_BANK_NN_START):
+            // TODO: This looks sketchy
+            return BANKS[address + (rom_bank - 1) * ROM_BANK_NN_START]; 
+        case (VRAM_START):
+            // TODO: CGB Banks
+            return VRAM[address & 0x1FFF];
+        case (ERAM_START):
+            if (ram_enable) {
+                // TODO: Implement properly
+                return ERAM[(address & 0x1FFF) + ram_bank * 0x2000];
+            }
+            return 0xFF;
+        case (WRAM_START):
+            // TODO: CGB Banks
+            return WRAM[address & 0x1FFF];
+        case (ECHO_RAM_START):
+            switch (address) {
+                case
+            }
+
     }
-    if (address < 0x100 && boot_rom)
+    */
+
+    if (address < BOOT_ROM_END && boot_rom) {
         return BOOTROM[address];
+    }
+
     if (address < 0x4000) {
         return BANKS[address];
     }
     if (address < 0x8000) { // Banks 01-XX, 00-XX for MBC5
         return BANKS[address + rom_bank * 0x4000 - 0x4000];
     }
-    if (address < 0xA000) // WRAM
+    if (address < 0xA000) { // VRAM
         return VRAM[address - 0x8000];
+        // VRAM/OAM blocking is not recommended
+        // if (((IO_R[0x41] & 3) == 3) && (IO_R[0x40] & 0x80)) {
+        //     return 0xFF;
+        // } else {
+        //     return VRAM[address - 0x8000];
+        // }
+    }
     if (address < 0xC000) {
         return ram_enable ? ERAM[address + ram_bank * 0x2000 - 0xA000] : 0xFF;
     }
@@ -114,12 +205,26 @@ byte Memory::read(word address) {
         return WRAM[address - 0xC000];
     if (address < 0xFE00)
         return WRAM[address - 0xE000];
-    if (address < 0xFEA0)
+    if (address < 0xFEA0) {
         return OAM_T[address - 0xFE00];
-    if (address < 0xFF00)
-        return 0xFF;
-    if (address == 0xFF00)
-        return 0xFF;
+        // VRAM/OAM blocking is not recommended
+        // if ((IO_R[0x41] & 2)) {
+        //     return 0xFF;
+        // }
+        // else {
+        //     return OAM_T[address - 0xFE00];
+        // }
+    }
+    // if (address < 0xFF00)
+    //     return 0xFF;
+    if (address == 0xFF00) { // Absolute fucking buffoon
+        // JOYP.update(sf::Keyboard::isKeyPressed);
+        // joyp_wait = true;
+        // while (joyp_wait);
+        JOYP.update(btns);
+        return *(byte*) &JOYP;
+    }
+        // return 0xFF;
     if (address == 0xFF04)
         return cpu->DIV;
     if (address < 0xFF80)
@@ -130,17 +235,20 @@ byte Memory::read(word address) {
 }
 
 void Memory::write(word address, byte value) {
-    // address &= 0xFFFF; // I'm pretty sure this is unnecessary
     if (!last_wrote_flag) {
         last_wrote = address;
         last_wrote_flag = true;
     }
-
-    if (address < 0x8000) {
+    if (dma && (address < 0xFF80)) {
+        
+    } else if (address < 0x8000) {
         write_regs(address, value);
     }
-    else if (address < 0xA000)
+    else if (address < 0xA000) { // VRAM/OAM blocking is not recommended
         VRAM[address - 0x8000] = value;
+    //     if (((IO_R[0x41] & 3) != 3) || !(IO_R[0x40] & 0x80))
+    //         VRAM[address - 0x8000] = value;
+    }
     else if (address < 0xC000) {
         if (ram_enable)
             ERAM[address + ram_bank * 0x2000 - 0xA000] = value;
@@ -149,10 +257,25 @@ void Memory::write(word address, byte value) {
         WRAM[address - 0xC000] = value;
     else if (address < 0xFE00);
         // return; // clown behaviour
-    else if (address < 0xFEA0)
+    else if (address < 0xFEA0) { // VRAM/OAM blocking is not recommended
         OAM_T[address - 0xFE00] = value;
-    else if (address < 0xFF00)
-        IO_R[0] = (value & ~0xF) | IO_R[0];
+    //     if (!(IO_R[0x41] & 2))
+    }
+    else if (address < 0xFF00) {
+        // IO_R[0] = (value & ~0xF) | (IO_R[0] & 0xF);
+        // IO_R[0] &= 0xF;
+        // IO_R[0] |= value;
+        // std::cout << COUT_HEX_BYTE_DS(value) << " : " << COUT_HEX_BYTE_DS(IO_R[0]) << std::endl;
+    } else if (address == 0xFF00) {
+        // IO_R[0] = (value & ~0xF) | (IO_R[0] & 0xF);
+        // JOYP.update(sf::Keyboard::isKeyPressed);
+        JOYP.mode = (value >> 4) & 0x3;
+        btns.polled = ~JOYP.mode;
+        btns.delivered = false;
+        // IO_R[0] &= 0xF;
+        // IO_R[0] |= value;
+        // std::cout << COUT_HEX_BYTE_DS(value) << " : " << COUT_HEX_BYTE_DS(IO_R[0]) << std::endl;
+    }
         // return; // clown behaviour
     else if (address == 0xFF41)
         IO_R[0x41] = (value & ~7) | IO_R[0x41];
@@ -163,6 +286,11 @@ void Memory::write(word address, byte value) {
             IO_R[0x41] |= 4;
         }
     }
+    else if (address == 0xFF46) {
+        dma = true;
+        IO_R[0x46] = value & 0xDF;
+        // std::cout << "Requesting DMA transfer" << std::endl;
+    }
     else if (address == 0xFF50) 
         boot_rom = !value;
     else if (address < 0xFF80) // I'm not a clown, I'm the whole circus
@@ -172,7 +300,7 @@ void Memory::write(word address, byte value) {
     else
         IE = value;
     
-    mem_writes.push_back(mem_write(cpu_steps, address, value));
+    // mem_writes.push_back(mem_write(cpu_steps, address, value));
 
     if (address == 0xFF02 && value == 0x81) { // Basic serial output
         std::cout << (char) IO_R[1];
@@ -188,15 +316,17 @@ void Memory::write(word address, byte value) {
 }
 
 void Memory::write_regs(word address, byte value) {
+    // TODO: Fix banking
     switch (mode & 0xF) {
         case (MODE_MBC1):
             if (address < 0x2000) {
-                ram_enable = (value == 0xA);
+                ram_enable = ((value & 0xF) == 0xA);
             } else if (address < 0x4000) {
                 value &= 0x1F;
-                if (value == 0) value = 1;
+                if (!value) value = 1;
                 rom_bank &= 0xFFC0; // This zeroes out the bottom 5 bits
-                rom_bank |= (value & (rom_banks - 1)); // This updates them with only the supported bits
+                rom_bank |= value; // This updates them with only the supported bits
+                // rom_bank %= rom_banks;
             } else if (address < 0x6000) {
                 rom_bank &= 0xFF9F;
                 rom_bank |= (value & 2) << 5;
@@ -233,26 +363,24 @@ void Memory::write_regs(word address, byte value) {
             break;
         case (MODE_MBC5):
             if (address < 0x2000) {
-                ram_enable = (value == 0xA);
+                ram_enable = ((value & 0xF) == 0xA);
             } else if (address < 0x3000) {
-                rom_bank &= 0xF0;
+                rom_bank &= 0xFF00;
                 rom_bank |= value;
+                // rom_bank %= rom_banks;
             } else if (address < 0x4000) {
-                rom_bank &= 0x0F;
+                rom_bank &= ~0xFEFF;
                 rom_bank |= ((!!value) << 8);
+                // rom_bank %= rom_banks;
             } else if (address < 0x6000) {
                 ram_bank = value & 0xF;
+                // ram_bank %= ram_banks;
             }
             break;
     }
 }
 
 byte Memory::raw_read(word address) {
-    address &= 0xFFFF;
-    // return Memory::MBC1_read(address);
-    if (address == 0xFF44) {
-        return 0x90;
-    }
     if (address < 0x4000) {
         return BANKS[address];
     }
