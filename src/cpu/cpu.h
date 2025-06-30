@@ -86,7 +86,7 @@ class CPU {
 
     bool& oam_dma;
     byte& dma_start;    std::stringstream doctor_log;
-    size_t log_lines = 4418120;
+    size_t log_lines = 10000000;
 
     byte dma_index = 0;
     

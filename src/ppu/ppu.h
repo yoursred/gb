@@ -97,7 +97,8 @@ typedef struct FIFO {
 
 class PPU {
     public:
-    // TODO: initialize these values.
+    // -TODO: initialize these values.
+    // ^^ Maybe unnecessary, would conflict with savestates
     lcdc& LCDC;
     lcd_stat& STAT;
     byte &SCY, &SCX, &LY, &LYC, 
@@ -112,6 +113,9 @@ class PPU {
     byte* working_buffer;
     byte* render_buffer;
     byte* buffer;
+    byte tileblock[384 * 8 * 8 * 4] = {255};
+    byte tilemap[32 * 32 * 8 * 8 * 4 * 2];
+    // byte tilemap1[32 * 32 * 8 * 8 * 4];
     
     byte scx_wait;
     byte wly;
@@ -133,7 +137,7 @@ class PPU {
     // const obj* vobj_arr[10];
     // size_t vobj_arr_index = 0;
     // byte visible_obj_count = 0;
-    const obj* current_obj;
+    const obj* current_obj = nullptr;
     bool fetch_halt = false;
     bool partial_fetch = false;
     // std::set<obj*> visible_objs_frame; // Debug
@@ -160,6 +164,8 @@ class PPU {
     void print_ppu_registers(std::ostream& output);
     std::string str();
     
+    void render_tiles();
+    void render_map();
     
     void inline push_pixel();
 

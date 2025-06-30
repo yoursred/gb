@@ -156,6 +156,10 @@ void Debugger::cmd_opc() {
 }
 
 void Debugger::cmd_pause() {
+    while (cpu.current_tcycles) {
+        cpu.tick(); // No pausing mid-instruction
+        ppu.tick();
+    }
     state = DBG_PAUSED;
 }
 
@@ -178,10 +182,12 @@ void Debugger::cmd_state() {
 
 void Debugger::cmd_step() {
     if (state == DBG_PAUSED) {
-        cpu.step();
-        for (i = 0; i < cpu.current_tcycles; i++) {
+        do {
+            cpu.tick();
             ppu.tick();
-        }
+        } while (cpu.tcycles);
+        // for (i = 0; i < cpu.current_tcycles; i++) {
+        // }
         print_instruction(cpu);
     }
 }

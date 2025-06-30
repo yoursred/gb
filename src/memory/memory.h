@@ -125,14 +125,14 @@ typedef struct joyp {
 class Memory {
     public:
     // byte BANK_0[0x4000];
-    byte BOOTROM [0x100] = {0};
+    byte BOOTROM [BOOT_ROM_END]; // = {0};
     byte* BANKS; // [0x10000] = {0xFF}; // MBC5 supports up to 512 ROM banks
-    byte VRAM   [0x2000] = {0xFF}; // more clown behaviour
-    byte ERAM   [0x2000] = {0xFF}; // MBC5 supports up to 16 RAM banks
-    byte WRAM   [0x2000] = {0xFF};
-    byte OAM_T   [0xA0] = {0xFF};
-    byte IO_R     [0x80] = {0xFF};
-    byte HRAM     [0x7F] = {0};
+    byte VRAM   [0x2000]; // = {0xFF}; // more clown behaviour
+    byte ERAM   [0x2000]; // = {0xFF}; // MBC5 supports up to 16 RAM banks
+    byte WRAM   [0x2000]; // = {0xFF};
+    byte OAM_T   [0xA0]; // = {0xFF};
+    byte IO_R     [0x80]; // = {0xFF};
+    byte HRAM     [0x7F]; // = {0};
     byte IE;
 
     buttons btns = {

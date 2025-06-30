@@ -27,6 +27,7 @@ void Debugger::debug_thread() {
     auto t1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> dt;
     std::chrono::duration<double, std::micro> frame = std::chrono::microseconds(16742);
+    // std::ofstream out("doctor_log.txt");
    
     while (state != DBG_END) {
         if (state == DBG_RUNNING) {
@@ -45,7 +46,7 @@ void Debugger::debug_thread() {
                 //     if (cpu.tcycles == 0)
                 //         doctor_log << cpu.log();
                 //     lines++;
-                // }
+                }
                 // if (ppu.LY == 0 && ppu.ticks == 0)
                 //     t0 = std::chrono::high_resolution_clock::now();
                 cpu.tick();
@@ -55,7 +56,7 @@ void Debugger::debug_thread() {
                 if (ppu.LY == 152 && ppu.ticks == 455) {
                     t1 = std::chrono::high_resolution_clock::now();
                     dt = t1 - t0;
-                    // std::this_thread::sleep_for(frame - dt);
+                    std::this_thread::sleep_for(frame - dt);
                     // TODO: add speedup
                 }
                 // for (i = 0; i < cpu.current_tcycles; i++) {
@@ -64,30 +65,47 @@ void Debugger::debug_thread() {
             }
         }
     }
-}
-
-void Debugger::event_thread() {
-
-    // out << doctor_log.rdbuf();
+    // out << cpu.doctor_log.rdbuf();
     // out.close();
 }
 
+void Debugger::event_thread() {
+}
+
+
 void Debugger::render_thread() {
     sf::Transform scale;
-
+    sf::Transform scale_super_debug;
+    float window_scale = 4;
+    const sf::Vector2u super_debug_size(512, 512);
+    const sf::Vector2u normal_size(160, 144);
+    
     sf::Font font("meslolgs.ttf");
-    sf::Text debug_text(font);
+    sf::Text obj_text(font);
+    sf::Text btn_state(font);
     std::stringstream objs;
 
-    sf::RectangleShape green({160 * 4, 144 * 4});
+    sf::Texture tiledata(sf::Vector2u(256, 96)), tilemap(sf::Vector2u(256, 512));
+    // tiledata.resize();
+    // tilemap.resize();
+
+    sf::RectangleShape green(sf::Vector2f(normal_size) * 4.f);
+    sf::RectangleShape bg_bounding_box0(sf::Vector2f(normal_size) * 2.f);
+    sf::RectangleShape bg_bounding_box1(sf::Vector2f(normal_size) * 2.f);
+    bg_bounding_box0.setFillColor(sf::Color::Transparent);
+    bg_bounding_box0.setFillColor(sf::Color::Transparent);
+    bg_bounding_box0.setOutlineColor(sf::Color::Red);
+    bg_bounding_box0.setOutlineThickness(2);
     green.setFillColor(sf::Color::Green);
 
     bool show_overlay = false;
+    bool super_debug = false;
     
-    debug_text.setFont(font);
-    debug_text.setCharacterSize(12);
-    debug_text.setFillColor(sf::Color::Magenta);
+    obj_text.setFont(font);
+    obj_text.setCharacterSize(12);
+    obj_text.setFillColor(sf::Color::Magenta);
     scale.scale(sf::Vector2f(4, 4));
+    scale_super_debug.scale(sf::Vector2f(2, 2));
     if (!window.setActive(true)) {
 
     }
@@ -102,7 +120,50 @@ void Debugger::render_thread() {
             }
             if (event->is<sf::Event::KeyReleased>() &&  event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Space)
                 show_overlay = !show_overlay;
-            // TODO: Add screenshots
+            if (event->is<sf::Event::KeyReleased>() &&  event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Grave) {
+                super_debug = !super_debug;
+                    auto previous_window_position = window.getPosition();
+                if (super_debug) {
+                    if (window_scale > 2) {
+                        window_scale = 2;
+                    }
+                    window.create(
+                        sf::VideoMode(super_debug_size * 2u), 
+                        "boygame debooger - version " VERSION, 
+                        sf::Style::Titlebar | sf::Style::Close
+                    );
+                    obj_text.setPosition({320, 0});
+                    window.setPosition(previous_window_position);
+                    window.setSize(super_debug_size * ((unsigned int) window_scale));
+                    green.setSize(sf::Vector2f(super_debug_size) * window_scale * 2.f);
+                } else {
+                    window.create(
+                    sf::VideoMode(normal_size * 4u), 
+                        "boygame debooger - version " VERSION, 
+                        sf::Style::Titlebar | sf::Style::Close
+                    );
+                    obj_text.setPosition({20, 0});
+                    window.setPosition(previous_window_position);
+                    window.setSize(normal_size * ((unsigned int) window_scale));
+                    green.setSize(sf::Vector2f(normal_size) * window_scale  * 4.f);
+                }
+            }
+            // Note to self: the video mode controls the window's "canvas", not its size on the screen
+            if (event->is<sf::Event::KeyReleased>() && 
+                event->getIf<sf::Event::KeyReleased>()->code >= sf::Keyboard::Key::Num1 &&
+                event->getIf<sf::Event::KeyReleased>()->code <= sf::Keyboard::Key::Num4) 
+            {
+                window_scale = (int)(event->getIf<sf::Event::KeyReleased>()->code) - (int)sf::Keyboard::Key::Num0;
+                if (super_debug) {
+                    window.setSize(super_debug_size * ((unsigned int) window_scale));
+                    green.setSize(sf::Vector2f(super_debug_size) * window_scale * 2.f);
+                } else {
+                    window.setSize(normal_size * ((unsigned int) window_scale));
+                    green.setSize(sf::Vector2f(normal_size) * window_scale * 4.f);
+                }
+            }
+            
+        // TODO: Add screenshots
         }
 
         window.clear();
@@ -111,39 +172,73 @@ void Debugger::render_thread() {
             mem.btns.update(sf::Keyboard::isKeyPressed);
         }
 
-        objs << mem.btns.str() << std::endl;
+        // objs << mem.btns.str() << std::endl;
 
         texture.update(ppu.render_buffer);
         sf::Sprite sprite(texture);
-        window.draw(green);
-        window.draw(sprite, scale);
-        int j = 5;
+        // sprite.setScale(sf::Vector2f(1, 1));
+        
+
+        // window.draw(green);
+        // window.draw(sprite, scale);
+
+        if (super_debug) {
+            ppu.render_tiles();
+            ppu.render_map();
+            tiledata.update(ppu.tileblock);
+            tilemap.update(ppu.tilemap);
+            sf::Sprite tilesprite(tiledata);
+            sf::Sprite mapsprite(tilemap);
+            tilesprite.setPosition(sf::Vector2f(0.f, 256.f));
+            mapsprite.setPosition(sf::Vector2f(256.f, 0.f));
+
+            window.draw(sprite, scale_super_debug);
+            window.draw(tilesprite, scale_super_debug);
+            window.draw(mapsprite, scale_super_debug);
+            bg_bounding_box0.setPosition(sf::Vector2f(256 + ppu.SCX, ppu.SCY) * 2.f);
+            window.draw(bg_bounding_box0);
+        } else {
+            window.draw(sprite, scale);
+        }
+
+
+        int j = 1;
         if (show_overlay) {
             for (int i = 0; i < 40; i ++) {
                 // TODO: pack this madness into a function of the struct `obj`
-                sf::RectangleShape obj_rect0({32, 32});
-                sf::RectangleShape obj_rect1({32, 32});
+                sf::RectangleShape obj_rect0(sf::Vector2f(8, 8) * (super_debug ? 2.f : 4.f));
+                sf::RectangleShape obj_rect1(sf::Vector2f(8, 8) * (super_debug ? 2.f : 4.f));
                 
                 obj_rect0.setFillColor(sf::Color::Transparent);
                 obj_rect1.setFillColor(sf::Color::Transparent);
                 obj_rect0.setPosition(
-                    sf::Vector2f(ppu.OAM_T[i].x - 8, ppu.OAM_T[i].y - 16) * 4.f
+                    sf::Vector2f(ppu.OAM_T[i].x - 8, ppu.OAM_T[i].y - 16) * (super_debug ? 2.f : 4.f)
                 );
                 obj_rect1.setPosition(
-                    sf::Vector2f(ppu.OAM_T[i].x - 8, ppu.OAM_T[i].y - 8) * 4.f
+                    sf::Vector2f(ppu.OAM_T[i].x - 8, ppu.OAM_T[i].y - 8) * (super_debug ? 2.f : 4.f)
                 );
                 obj_rect0.setOutlineColor(sf::Color::Green);
                 obj_rect1.setOutlineColor(sf::Color::Yellow);
-                obj_rect0.setOutlineThickness(1);
-                obj_rect1.setOutlineThickness(1);
+                obj_rect0.setOutlineThickness((super_debug ? 2 : 4) / window_scale);
+                obj_rect1.setOutlineThickness((super_debug ? 2 : 4) / window_scale);
 
                 if (ppu.OAM_T[i].visible()) {
                     objs << ppu.OAM_T[i].str();
                     objs << std::endl;
 
                     sf::Vertex line[2] = {
-                        {{ppu.OAM_T[i].str().size() * 7.f, j * 15.f}, sf::Color::Magenta, {0, 0}},
-                        {{(ppu.OAM_T[i].x - 8) * 4.f, (ppu.OAM_T[i].y - 16) * 4.f}, sf::Color::Blue, {0, 0}}
+                        {
+                            {
+                                super_debug ? (160 * 2.f) : ppu.OAM_T[i].str().size() * 7.f,
+                                j * 15.f
+                            }, sf::Color::Magenta, {0, 0}
+                        },
+                        {
+                            {
+                                (ppu.OAM_T[i].x - (super_debug ? 0 : 8)) * (super_debug ? 2.f : 4.f),
+                                (ppu.OAM_T[i].y - 16) * ((super_debug ? 2.f : 4.f))
+                            }, sf::Color::Blue, {0, 0}
+                        }
                     };
 
                     obj_rect0.setOutlineColor(sf::Color::Blue);
@@ -155,8 +250,8 @@ void Debugger::render_thread() {
                 window.draw(obj_rect0);
                 // window.draw(obj_rect1); // TODO: Keep track of LCDC.obj16_enable to properly outline them
             }
-            debug_text.setString(objs.str());
-            window.draw(debug_text);
+            obj_text.setString(objs.str());
+            window.draw(obj_text);
         }
         window.display();
     }
@@ -178,13 +273,16 @@ void Debugger::debug_main(int argc, const char* argv[]) {
 
 
     window.create(
-        sf::VideoMode(sf::Vector2u(160 * 4, 144 * 4)), 
+        sf::VideoMode(sf::Vector2u(160, 144) * 4u), 
         "boygame debooger - version " VERSION, 
-        sf::Style::Close | sf::Style::Titlebar
-        );
+        sf::Style::Titlebar | sf::Style::Close
+    );
     bool resized = texture.resize(sf::Vector2u(160, 144));
     if (!resized) {
-        window.setSize(sf::Vector2u(160, 144));
+        // window.setSize(sf::Vector2u(160, 144));
+    }
+    for (size_t i = 0; i < (32 * 4 * 3 * 8 * 8 * 4); i++) {
+        ppu.tileblock[i] = 255;
     }
     window.setKeyRepeatEnabled(false);
     window.setFramerateLimit(60);

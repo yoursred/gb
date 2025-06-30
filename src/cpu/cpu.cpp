@@ -37,12 +37,12 @@ CPU::CPU(Memory& memory):
     TIMA = 0x00;
     TMA = 0x00;
     TAC = 0xF8;
-    doctor_log << log_dr();
-    opcode = memory.read(R.pc++);
-    current_tcycles = get_cycles(opcode);
+    // doctor_log << log_dr();
+    // opcode = memory.read(R.pc);
+    // current_tcycles = get_cycles(opcode);
 
 
-    // fetch();
+    fetch();
 }
 
 byte CPU::fetch_instruction() {
@@ -90,13 +90,15 @@ byte CPU::prefetch() {
 }
 
 byte CPU::fetch() {
-    if (log_lines > 0 && (prefixed_fetch != 1)) {
-        doctor_log << log_dr();
-        if (!(--log_lines))
-            std::cout << std::endl << "DONE" << std::endl << "> ";
-    } else {
-        // std::cout << "DONE" << std::endl;
-    }
+    // if (log_lines > 0 && (prefixed_fetch != 1)) {
+    //     doctor_log << log_dr();
+    //     if (!(--log_lines))
+    //         std::cout << std::endl << "DONE" << std::endl << "> ";
+    // } else {
+    //     // std::cout << "DONE" << std::endl;
+    // }
+    // bool halt_wakeup = opcode == 0x76;
+
 
     switch (ime_buffer) {
         case EI_0:
@@ -111,29 +113,36 @@ byte CPU::fetch() {
     }
     
     if ((IF & IE) && ime) {
-        std::cout << "INTERRUPT " << COUT_HEX_BYTE(IF) << std::endl; 
+        // std::cout << "INTERRUPT " << COUT_HEX_BYTE(IF) << std::endl; 
     }
 
+    // if (!halt_wakeup) {
     interrupt = 0;
+    // }
     opcode = memory.read(R.pc++);
+    if (opcode == 0x76) {// HALT shenanigans
+        // HALT's fetch doesn't increment the program counter
+        // R.pc--;
+    }
     tcycles = 0;
+    // if (!halt_wakeup && !interrupt)
     current_tcycles = get_cycles(opcode);
     if (prefixed_fetch == 1) {
         prefixed_fetch++;
         current_tcycles = get_cycles_prefixed(opcode);
     } else {
         prefixed_fetch %= 2;
-        // if (opcode != 0xF3)
-            if (handle_interrupt()) {
-                current_tcycles = 20;
-            }
+        // if (!halt_wakeup)
+        if (handle_interrupt()) {
+            current_tcycles = 20;
+        }
     }
 
     // tcycles = get_cycles(opcode);
     // mcycles = tcycles / 4;
     // R.pc++;
     return 0;
-}
+}   
 
 void CPU::tick() {
     if (!halted) {
@@ -149,7 +158,26 @@ void CPU::tick() {
         }
         if ((current_tcycles - (++tcycles)) == 0)
             fetch();
-}
+        if (oam_dma) {
+                dma_transfer();
+        }
+    } else {
+        if ((tcycles % 4) == 0) {
+            timer_tick();
+        }
+        if ((current_tcycles - (++tcycles)) == 0) {
+            tcycles = 0; // Fake "NOP"
+            // if (handle_interrupt()) {
+            //     current_tcycles = 20;
+            // }
+            if (IE & IF) {
+                fetch();
+            }
+        }
+        if (oam_dma) {
+            dma_transfer();
+        }
+    }
 }
 
 void CPU::step() {
@@ -231,7 +259,7 @@ bool CPU::handle_interrupt() {
             // std::cout << "INTERRUPT\n";
             // std::cout << COUT_HEX_BYTE_DS(IF) << " " << COUT_HEX_BYTE_DS(IE)
         }
-        if (IF & IRQ_VBLANK) {
+        if (IF & IE & IRQ_VBLANK) {
             IF &= ~IRQ_VBLANK;
             interrupt = 0x40;
         } else if (IF & IE & IRQ_LCD_STAT) {
@@ -247,48 +275,9 @@ bool CPU::handle_interrupt() {
             interrupt = 0x60;
             IF &= ~IRQ_JOYPAD;
         }
-            // case IRQ_VBLANK:
-            //     // std::cout << std::endl << "VBLANK IRQ" << std::endl;
-            //     // std::cout << "> ";
-            //     // vector
-            //     IF &= ~IRQ_VBLANK;
-            //     interrupt = 0x40;
-            //     break;
-            // case IRQ_LCD_STAT:
-            //     // if (!last_stat_int) { // rising-edge detection
-            //     // std::cout << std::endl << "STAT IRQ" << std::endl;
-            //     // std::cout << "> ";
-            //     // RST(0x48);
-            //     IF &= ~IRQ_LCD_STAT;
-            //     interrupt = 0x48;
-            //     // }
-            //     break;
-            // case IRQ_TIMER:
-            //     // std::cout << "IRQ_TIMER" << std::endl;
-            //     // std::cout << log();
-            //     // memory.write(--(R.sp), R.pc >> 8);
-            //     // memory.write(--(R.sp), R.pc);
-            //     // R.pc = 0x50;
-            //     // new_pc = 0x50;
-            //     interrupt = 0x50;
-            //     IF &= ~IRQ_TIMER;
-            //     // std::cout << log();
-            //     break;
-            // case IRQ_SERIAL:
-            //     // RST(0x58);
-            //     IF &= ~IRQ_SERIAL;
-            //     interrupt = 0x58;
-            //     break;
-            // case IRQ_JOYPAD:
-            //     // RST(0x60);
-            //     interrupt = 0x60;
-            //     IF &= ~IRQ_JOYPAD;
-            //     break;
-            // default:
-            //     std::cout << "HCF CONDITION" << std::endl;
-            //     break;
-        
         return ret;
+    } else if (IF & IE) {
+        halted = false;
     }
     // else if ((IE & IF)) {
     //     switch (IE & IF) {
@@ -315,8 +304,8 @@ bool CPU::handle_interrupt() {
 void CPU::timer_tick() {
     // -https://pixelbits.16-b.it/GBEDG/timers/#timer-operation- DEAD LINK
     // https://hacktix.github.io/GBEDG/timers/#timer-operation
+    // div_timer++;
     div_timer++;
-    // div_timer += 4;
     if (tima_reload) {
         if (tima_reload_pipe == 3) {
             TIMA = TMA;
@@ -387,14 +376,14 @@ std::string CPU::log() {
 
 std::string CPU::log_dr() {
     std::stringstream out;
-    out <<  "A:" << COUT_HEX_BYTE(R_A);
-    out << " F:" << COUT_HEX_BYTE(R_F);
-    out << " B:" << COUT_HEX_BYTE(R_B);
-    out << " C:" << COUT_HEX_BYTE(R_C);
-    out << " D:" << COUT_HEX_BYTE(R_D);
-    out << " E:" << COUT_HEX_BYTE(R_E);
-    out << " H:" << COUT_HEX_BYTE(R_H);
-    out << " L:" << COUT_HEX_BYTE(R_L);
+    out <<  "A:" << COUT_HEX_BYTE(R.a);
+    out << " F:" << COUT_HEX_BYTE(R.f);
+    out << " B:" << COUT_HEX_BYTE(R.b);
+    out << " C:" << COUT_HEX_BYTE(R.c);
+    out << " D:" << COUT_HEX_BYTE(R.d);
+    out << " E:" << COUT_HEX_BYTE(R.e);
+    out << " H:" << COUT_HEX_BYTE(R.h);
+    out << " L:" << COUT_HEX_BYTE(R.l);
     out << " SP:" << COUT_HEX_WORD(R.sp);
     out << " PC:" << COUT_HEX_WORD(R.pc);
     out << " PCMEM:";

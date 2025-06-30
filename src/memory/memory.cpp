@@ -111,7 +111,7 @@ Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
     // It's populatin' time!
     // memcpy(BANKS, ROM, size);
     if (BOOTROM != NULL) {
-        std::memcpy(Memory::BOOTROM, BOOTROM, 0x100);
+        std::memcpy(Memory::BOOTROM, BOOTROM, BOOT_ROM_END);
         boot_rom = true;
     }
     std::memcpy(BANKS, ROM, size);
@@ -126,7 +126,7 @@ Memory::Memory(byte BOOTROM[]) {
     mode = MODE_ROM;
     rom_banks = 2;
     ram_banks = 0;
-    std::memcpy(Memory::BOOTROM, BOOTROM, 0x100);
+    std::memcpy(Memory::BOOTROM, BOOTROM, BOOT_ROM_END);
     BANKS = new byte[0x8000];
     boot_rom = true;
     
@@ -226,7 +226,7 @@ byte Memory::read(word address) {
     }
         // return 0xFF;
     if (address == 0xFF04)
-        return cpu->DIV;
+        return cpu->div_timer >> 6;
     if (address < 0xFF80)
         return IO_R[address - 0xFF00];
     if (address < 0xFFFF)

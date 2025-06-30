@@ -15,3 +15,4 @@
 - [ ] C++-ify (SFML 3.0 requires C++17)
 - [ ] Add command to dump framebuffer or screenshot
 - [ ] Robust `PPU` frame debugger
+- [ ] Use a lot of `const` everywhere

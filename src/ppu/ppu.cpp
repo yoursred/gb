@@ -139,6 +139,7 @@ void PPU::tick() {
             if (ticks == 79) {
                 x = 0;
                 fetch_ticks = 0;
+                fetch_ticks_obj = 0;
                 scx_wait = SCX % 8;
                 fetch_x = (SCX / 8) % 32;
                 fetch_wx = 0;
@@ -147,6 +148,7 @@ void PPU::tick() {
                 [](const obj* a, const obj* b){
                     return a->x < b->x;
                 });
+                current_obj = nullptr;
 
                 fifo.clear();
                 wy_in_range = (WY <= LY);
@@ -199,7 +201,7 @@ void PPU::tick() {
         IF |= IRQ_LCD_STAT;
     }
     if (!last_vblank_irq && curr_vblank_irq)
-        // IF |= IRQ_VBLANK;
+        IF |= IRQ_VBLANK;
     last_stat_irq = curr_stat_irq;
     last_vblank_irq = curr_vblank_irq;
 }
@@ -353,6 +355,70 @@ std::string PPU::str() {
 
 void PPU::operator delete(void* obj) {
     delete ((PPU*) obj)->buffer;
+}
+
+void PPU::render_tiles() {
+    size_t _x, _y;
+    word _row;
+    // 32 * 4 * 3
+    for (size_t i = 0; i < (32 * 4 * 3); i++) {
+        _x = (i % 32) * 8;
+        for (byte _line = 0; _line < 8; _line++) {
+            _y = (i / 32) * 8 + _line;
+            _row = VRAM[(i << 4) + _line * 2];
+            _row |= VRAM[(i << 4) + _line * 2 + 1] << 8;
+
+            _row = decode_tile_data(_row);
+            // working_buffer[(LY * 160 + x) * 4 + i] = (3 - pixel) * 85;
+            for (byte _pixel = 0; _pixel < 8; _pixel++) {
+                for (byte _channel = 0; _channel < 4; _channel++) {
+                    if (_channel != 3)
+                        tileblock[(_y * 256 + _x + _pixel) * 4 + _channel] = (3 - ((_row >> (14 - _pixel * 2)) & 0b11)) * 85;
+                    else
+                        tileblock[(_y * 256 + _x + _pixel) * 4 + _channel] = 255;
+                }
+            }
+        }
+    }
+}
+
+void PPU::render_map() {
+    size_t _x, _y, i;
+    word _row;
+    // 32 * 4 * 3
+    for (size_t j = 0; j < (32 * 32 * 2); j++) {
+        i = VRAM[0x1800 + j];
+        _x = (j % 32) * 8;
+        for (byte _line = 0; _line < 8; _line++) {
+            _y = (j / 32) * 8 + _line;
+            /*
+            if (window && LCDC.win_enable) {
+                if (LCDC.bg_win_tileset) {
+                    fetch_tile_high = VRAM[(tile_id << 4) + (wly % 8) * 2 + 1];
+                } else {
+                    fetch_tile_high = VRAM[0x1000 + ((sbyte)tile_id << 4) + (wly % 8) * 2 + 1];
+                }*/
+            if (LCDC.bg_win_tileset) {
+                _row = VRAM[(i << 4) + _line * 2];
+                _row |= VRAM[(i << 4) + _line * 2 + 1] << 8;
+
+            } else {
+                _row = VRAM[0x1000 + ((sbyte)i << 4) + _line * 2];
+                _row |= VRAM[0x1000 +((sbyte)i << 4) + _line * 2 + 1] << 8;
+            }
+
+            _row = decode_tile_data(_row);
+            // working_buffer[(LY * 160 + x) * 4 + i] = (3 - pixel) * 85;
+            for (byte _pixel = 0; _pixel < 8; _pixel++) {
+                for (byte _channel = 0; _channel < 4; _channel++) {
+                    if (_channel != 3)
+                        tilemap[(_y * 256 + _x + _pixel) * 4 + _channel] = (3 - ((_row >> (14 - _pixel * 2)) & 0b11)) * 85;
+                    else
+                        tilemap[(_y * 256 + _x + _pixel) * 4 + _channel] = 255;
+                }
+            }
+        }
+    }
 }
 
 word decode_tile_data(word x) {

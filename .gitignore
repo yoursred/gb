@@ -9,3 +9,5 @@ roms/
 *.o
 *.txt
 *.ttf
+gmon.out
+gprof.dot

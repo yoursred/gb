@@ -91,7 +91,7 @@ int main(int argc, const char* argv[]) {
             }
             if (stat(argv[3], &buf_boot) == 0) {
                 std::cout << buf_boot.st_size << std::endl;
-                if (buf_boot.st_size == 0x100) {
+                if (buf_boot.st_size == BOOT_ROM_END) {
                     bootrom = new byte[buf_boot.st_size];
                     fs_boot.open(argv[3], std::ios::in | std::ios::binary);
                     fs_boot.read((char *) bootrom, buf_boot.st_size);
@@ -120,7 +120,7 @@ int main(int argc, const char* argv[]) {
     // else
     // Memory cart = Memory(bootrom);
     Memory cart = Memory(bootrom, rom, buf_rom.st_size);
-    cart.boot_rom = false;
+    // cart.boot_rom = false;
     CPU cpu(cart);
     // cpu.R.pc = 0;
     // cpu.new_pc = 0;

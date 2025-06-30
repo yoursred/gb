@@ -1,5 +1,6 @@
-#include "debugger/debug.h"
 #include "include.h"
+#include "debugger/debug.h"
+#include "cpu/insset.h"
 // #include "memory/memory.h"
 // #include "cpu/cpu.h"
 // #include "ppu/ppu.h"
@@ -15,33 +16,33 @@ const std::regex r_s8 ("e8");
 
 
 
-std::string print_instruction(CPU& cpu) {
-    byte l = cpu.prefetch();
-    const byte& x = cpu.working_byte;
+std::string print_instruction(const CPU& cpu) {
+    byte l = get_length(cpu.opcode);
+    // const byte& x = cpu.working_byte;
 
     std::string out;
     std::stringstream ss;
     std::stringstream r;
 
-    if (cpu.opcode == 0xCB) { // 0xCB instructions do not need any replacement
-        return instructions[0x100 + x];
+    if (cpu.prefixed_fetch) { // 0xCB instructions do not need any replacement
+        return instructions[0x100 + cpu.opcode];
     }
     else {
         out = instructions[cpu.opcode];
         if (l == 3) {
-            r << COUT_HEX_WORD_DS(cpu.working_word);
+            r << COUT_HEX_WORD_DS(cpu.R.wz);
             ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
             return ss.str();
         } 
         if (l == 2) {
             if (std::regex_match(out, r_u8)) {
-                r << COUT_HEX_BYTE_DS(x);
+                r << COUT_HEX_BYTE_DS(cpu.R.z);
                 ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
                 return ss.str();
             }
             else if (std::regex_match(out, r_s8)) {
-                r << (x == 0 ? " " : (x > 127 ? "-" : "+"));
-                r << COUT_HEX_BYTE_DS(x);
+                r << (cpu.R.z == 0 ? "$" : (cpu.R.z > 127 ? "$-" : "$+"));
+                r << COUT_HEX_BYTE(cpu.R.z);
                 ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
                 return ss.str();
             }
@@ -115,7 +116,7 @@ const char* instructions[] = {
     "OR B", "OR C", "OR D", "OR E", "OR H", "OR L", "OR [HL]", "OR A", 
     "CP B", "CP C", "CP D", "CP E", "CP H", "CP L", "CP [HL]", "CP A", 
     "RET NZ", "POP BC", "JP NZ, a16", "JP a16", "CALL NZ, a16", "PUSH BC", "ADD A, d8", "RST 00H", 
-    "RET Z", "RET", "JP Z, a16", "PCB", "CALL Z, a16", "CALL a16", "ADC A, d8", "RST 08H", 
+    "RET Z", "RET", "JP Z, a16", "PREFIX CB", "CALL Z, a16", "CALL a16", "ADC A, d8", "RST 08H", 
     "RET NC", "POP DE", "JP NC, a16", "NUL", "CALL NC, a16", "PUSH DE", "SUB d8", "RST 10H", 
     "RET C", "RETI", "JP C, a16", "NUL", "CALL C, a16", "NUL", "SBC A, d8", "RST 18H", 
     "LDH [$FF00 + a8], A", "POP HL", "LD [C], A", "NUL", "NUL", "PUSH HL", "AND d8", "RST 20H", 

@@ -24,7 +24,7 @@
 
 
 // Output functions
-std::string print_instruction(CPU& cpu);
+std::string print_instruction(const CPU& cpu);
 void dumphex(Memory& data, word start, word len, std::ostream& output);
 
 // Parsing functions

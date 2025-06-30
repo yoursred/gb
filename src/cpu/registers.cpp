@@ -13,10 +13,11 @@ CPU::Registers::Registers():
     pch(*((byte*) &pc + 1)), pcl(*((byte*) &pc)),
     w(*((byte*) &wz + 1)), z(*((byte*) &wz))
 {
-    af = 0x1B0; bc = 0x13; de = 0xD8;
-    hl = 0x14d; sp = 0xFFFE; pc = 0x100;
+    af = 0; bc = 0; de = 0;
+    hl = 0; sp = 0; pc = 0;
     wz = 0;
     // a = *((byte*) &af);
+    // TODO: detect bootrom and handle appropriately
 }
 
 void CPU::Registers::print_regs(std::ostream& output) {

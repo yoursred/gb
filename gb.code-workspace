@@ -6,6 +6,7 @@
 	],
 	"settings": {
 		"files.associations": {
+			"*.inc": "mips",
 			"iostream": "cpp",
 			"stdio.h": "c",
 			"__bit_reference": "c",
@@ -89,7 +90,35 @@
 			"filesystem": "cpp",
 			"stack": "cpp",
 			"map": "cpp",
-			"regex": "cpp"
-		}
+			"regex": "cpp",
+			"charconv": "cpp",
+			"codecvt": "cpp",
+			"set": "cpp",
+			"format": "cpp",
+			"span": "cpp",
+			"text_encoding": "cpp"
+		},
+		"terminal.integrated.tabs.enabled": false,
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "bash",
+				"icon": "terminal-bash"
+			},
+			"zsh": {
+				"path": "zsh"
+			},
+			"fish": {
+				"path": "fish"
+			},
+			"tmux": {
+				"path": "tmux",
+				"icon": "terminal-tmux"
+			},
+			"pwsh": {
+				"path": "pwsh",
+				"icon": "terminal-powershell"
+			}
+		},
+		"terminal.integrated.defaultProfile.linux": "zsh"
 	}
 }
