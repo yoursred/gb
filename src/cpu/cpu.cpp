@@ -180,69 +180,6 @@ void CPU::tick() {
     }
 }
 
-void CPU::step() {
-    // TODO: halt
-    // timer_tick();
-    if (!halted) {
-        // if (!int_trig){
-            new_pc += fetch_instruction();
-        // } else {
-        //     fetch_instruction();
-        // }
-
-        for (byte i = 0; i < current_tcycles; i++) {
-            timer_tick();
-            if (oam_dma) {
-                for (byte j = 0; j < 4; j++)
-                dma_transfer();
-            }
-        }
-
-        switch (opcode) {
-            case (0x00): break;
-            case (0xCB): decode_prefixed(); break;
-            default: decode();
-        }
-        // } else {
-            
-        // }
-        switch (ime_buffer) {
-            case EI_0:
-                ime_buffer = EI_1;
-                break;
-            case EI_1:
-                // std::cout << "ENABLING INTERRUPTS\n";
-                ime = true;
-                ime_buffer = 0;
-                break;
-        }
-    }
-    else {
-        current_tcycles = 4;
-        for (byte i = 0; i < current_tcycles; i++) {
-            timer_tick();
-            if (oam_dma) {
-                dma_transfer();
-            }
-        }
-    }
-    instructions++;
-    cycles += current_tcycles;
-    // timer_timer += current_tcycles;
-    // if (opcode != 0xB6 || true) { // Memory timing test
-    //     for (byte i = 0; i < current_tcycles; i++) {
-    //         timer_tick();
-    //     }
-    // } else {
-    //     // std::cout << "Encountered F0" << std::endl;
-    // }
-    R.pc = new_pc;
-    // current_tcycles = 0;
-    // last_stat_int = IF & INT_LCD_STAT;
-    interrupt = handle_interrupt();
-    // timer_tick();
-}
-
 bool CPU::handle_interrupt() {
     // if (opcode == 0xF3) {
     //     return false;
@@ -252,12 +189,9 @@ bool CPU::handle_interrupt() {
         // std::cout << "CHECKING FOR INTERRUPT\n";
         if (IF & IE) {
             ime = false;
-            // new_pc = R.pc;
             // current_tcycles += (5 * 4);
             ret = true;
             halted = false;
-            // std::cout << "INTERRUPT\n";
-            // std::cout << COUT_HEX_BYTE_DS(IF) << " " << COUT_HEX_BYTE_DS(IE)
         }
         if (IF & IE & IRQ_VBLANK) {
             IF &= ~IRQ_VBLANK;

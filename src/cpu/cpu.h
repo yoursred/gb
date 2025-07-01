@@ -53,7 +53,6 @@ class CPU {
     byte working_byte = 0;
     word working_word = 0;
     
-    word new_pc = 0x100;
     byte tcycles = 0;
     byte current_tcycles = 0;
     byte prefixed_fetch = 0;
@@ -93,15 +92,14 @@ class CPU {
     byte fetch();
     byte fetch_instruction();
     byte prefetch();
-    void step();
     void decode();
     void decode_prefixed();
 
     bool handle_interrupt();
 
-    byte machine_cycle();
+    // byte machine_cycle();
     void tick();
-    void cycle(byte count);
+    // void cycle(byte count);
     void timer_tick();
 
     void dma_transfer();
@@ -115,20 +113,6 @@ class CPU {
         word af, bc, de, hl, sp, pc, wz;
         byte &a, &f, &b, &c, &d, &e, &h, &l;
         byte &sph, &spl, &pch, &pcl, &w, &z;
-        // byte& a = *((byte*) &af + 1);
-        // byte& f = *((byte*) &af);
-        // byte& b = *((byte*) &bc + 1);
-        // byte& c = *((byte*) &bc);
-        // byte& d = *((byte*) &de + 1);
-        // byte& e = *((byte*) &de);
-        // byte& h = *((byte*) &hl + 1);
-        // byte& l = *((byte*) &hl);
-        // byte& sph = *((byte*) &sp + 1);
-        // byte& spl =< *((byte*) &sp);
-        // byte& pch = *((byte*) &pc + 1);
-        // byte& pcl = *((byte*) &pc);
-        // byte& w = *((byte*) &wz + 1);
-        // byte& z = *((byte*) &wz);
 
         Registers();
 
