@@ -11,9 +11,10 @@
             "program": "${workspaceFolder}/build/gb",
             "args": [
                 // "bootrom",
-                "debug",
+                // "debug",
+                "-df",
                 "roms/tetris.gb",
-                "dmg_boot.bin"
+                // "dmg_boot.bin"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

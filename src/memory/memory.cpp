@@ -52,9 +52,14 @@ std::string buttons::str() {
    return s.str();
 }
 
-Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
-    // prox = MemoryProxy();
+rom_header::rom_header(byte ROM[]) {
+    static_assert(sizeof(rom_header) == ROM_HEADER_SIZE);
+    std::memcpy(this, ROM + 0x100, sizeof(rom_header));
+}
 
+// Memory::Memory() {}
+
+Memory::Memory(byte ROM[], unsigned int size) {
     switch (ROM[0x147]) { // Cart type
         case (0x00): mode = MODE_ROM; break;
         case (0x01): mode = MODE_MBC1; break;
@@ -109,11 +114,6 @@ Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
     BANKS = new byte[size];
 
     // It's populatin' time!
-    // memcpy(BANKS, ROM, size);
-    if (BOOTROM != NULL) {
-        std::memcpy(Memory::BOOTROM, BOOTROM, BOOT_ROM_END);
-        boot_rom = true;
-    }
     std::memcpy(BANKS, ROM, size);
 
     JOYP = {
@@ -122,14 +122,22 @@ Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size) {
     };
 }
 
+Memory::Memory(byte BOOTROM[], byte ROM[], unsigned int size)
+    : Memory(ROM, size) {
+    if (BOOTROM != nullptr) {
+        std::memcpy(Memory::BOOTROM, BOOTROM, BOOT_ROM_END);
+        boot_rom = true;
+    }
+}
+
 Memory::Memory(byte BOOTROM[]) {
-    mode = MODE_ROM;
-    rom_banks = 2;
-    ram_banks = 0;
+    if (!rom_banks) {
+        rom_banks = 2;
+        ram_banks = 0;
+    }
     std::memcpy(Memory::BOOTROM, BOOTROM, BOOT_ROM_END);
     BANKS = new byte[0x8000];
     boot_rom = true;
-    
 }
 
 byte Memory::read(word address) {

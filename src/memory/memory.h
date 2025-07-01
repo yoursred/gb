@@ -100,6 +100,8 @@ struct mem_read {
 #define DPAD 2
 #define BTNS 1
 
+#define ROM_HEADER_SIZE 0x50
+
 typedef struct buttons {
     bool a, b, start, select;
     bool up, down, left, right;
@@ -121,6 +123,24 @@ typedef struct joyp {
 
     void update(buttons src);
 } joyp;
+
+typedef struct rom_header {
+    byte ENTRY[4];
+    byte LOGO[0x30];
+    byte TITLE[0x10];
+    byte NL_CODE[2];
+    byte SGB;
+    byte TYPE;
+    byte ROM_SIZE;
+    byte RAM_SIZE;
+    byte DEST;
+    byte OL_CODE;
+    byte VERSION_MASK;
+    byte HEADER_CHECKSUM;
+    word GLOBAL_CHECKSUM;
+
+    rom_header(byte ROM[]);
+} rom_header;
 
 class Memory {
     public:
@@ -157,7 +177,7 @@ class Memory {
 
     bool dma = false;
 
-    byte mode;
+    byte mode = MODE_ROM;
 
     CPU *cpu;
 
@@ -173,6 +193,8 @@ class Memory {
     bool last_wrote_flag = false;
 
 
+    Memory();
+    Memory(byte ROM[], unsigned int size);
     Memory(byte BOOTROM[], byte ROM[], unsigned int size);
     Memory(byte BOOTROM[]);
 
