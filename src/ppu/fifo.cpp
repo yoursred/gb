@@ -32,7 +32,11 @@ void FIFO::push_obj(word row, obj attributes) {
     for (int i = 0; i < k; i++) {
         j = 14 - i * 2;
         l = ~(attr_queue >> (30 - i * 2)) & 0b11;
-        if ((l & 0b10) || !(l & 0b10) && !((obj_queue >> (30 - i * 2)) & 0b11)) { // Only overwrite transparent pixels
+        if (
+            (l & 0b10) || 
+            (!(l & 0b10) && 
+            !((obj_queue >> (30 - i * 2)) & 0b11))
+        ) { // Only overwrite transparent pixels
         // if (~(attr_queue >> (30 - i * 2)) & 0b10) { // Only overwrite transparent pixels
             obj_queue &= ~(0b11 << (30 - i * 2));
             obj_queue |= ((row >> j) & 0b11) << (30 - i * 2);

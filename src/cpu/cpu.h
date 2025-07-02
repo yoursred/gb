@@ -84,29 +84,22 @@ class CPU {
     byte tima_reload_pipe = 0;
 
     bool& oam_dma;
-    byte& dma_start;    std::stringstream doctor_log;
+    byte& dma_start;    
+    std::stringstream doctor_log;
     size_t log_lines = 10000000;
 
     byte dma_index = 0;
     
     byte fetch();
-    byte fetch_instruction();
-    byte prefetch();
     void decode();
     void decode_prefixed();
 
     bool handle_interrupt();
 
-    // byte machine_cycle();
     void tick();
-    // void cycle(byte count);
     void timer_tick();
 
     void dma_transfer();
-
-    #ifdef __GHOST_DEBUG
-    size_t memory_writes = 0;
-    #endif
 
     class Registers {
         public:

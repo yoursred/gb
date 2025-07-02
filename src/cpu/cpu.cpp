@@ -20,8 +20,8 @@ CPU::CPU(Memory& memory):
     TIMA(memory.IO_R[5]),
     TMA(memory.IO_R[6]),
     TAC(memory.IO_R[7]),
-    dma_start(memory.IO_R[0x46]),
-    oam_dma(memory.dma)
+    oam_dma(memory.dma),
+    dma_start(memory.IO_R[0x46])
 {
     // CPU::R( = CPU::Registers());
     // CPU::R = Registers();
@@ -43,50 +43,6 @@ CPU::CPU(Memory& memory):
 
 
     fetch();
-}
-
-byte CPU::fetch_instruction() {
-    CPU::opcode = memory.read(R.pc);
-    byte length;
-    if (opcode != 0xCB){
-        length = get_length(CPU::opcode);
-        CPU::current_tcycles = get_cycles(CPU::opcode);
-    } else {
-        length = get_length_prefixed(CPU::opcode); // Wholly redundant, it's always =2
-        CPU::current_tcycles = get_cycles_prefixed(CPU::opcode);
-    }
-    switch (length) { // maybe we don't really need this?
-        case 3:
-            working_word = memory.read(R.pc + 1);
-            working_word |= (word) memory.read(R.pc + 2) << 8;
-            break;
-        case 2:
-            working_byte = memory.read(R.pc + 1);
-            break;
-    }
-    return length;
-}
-
-byte CPU::prefetch() {
-    // This is for the deboogger
-    CPU::opcode = memory.read(R.pc);
-    byte length;
-    if (opcode != 0xCB){
-        length = get_length(CPU::opcode);
-    } else {
-        length = get_length_prefixed(CPU::opcode); // Wholly redundant, it's always =2
-    }
-    // printf("opc=0x%02X, length=%d\n", CPU::opcode, length);
-    switch (length) { // maybe we don't really need this?
-        case 3:
-            working_word = memory.read(R.pc + 1);
-            working_word |= (word) memory.read(R.pc + 2) << 8;
-            break;
-        case 2:
-            working_byte = memory.read(R.pc + 1);
-            break;
-    }
-    return length;
 }
 
 byte CPU::fetch() {

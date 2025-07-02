@@ -101,9 +101,9 @@ class PPU {
     // ^^ Maybe unnecessary, would conflict with savestates
     lcdc& LCDC;
     lcd_stat& STAT;
-    byte &SCY, &SCX, &LY, &LYC, 
-         &DMA, &WY, &WX;
+    byte &SCY, &SCX, &LY, &LYC, &DMA;
     dmg_plt &BGP, &OBP0, &OBP1;
+    byte &WY, &WX;
     byte &IF;
     byte* VRAM;
     byte* OAM;

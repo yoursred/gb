@@ -96,9 +96,9 @@ class Debugger {
 
     Debugger(Memory& mem, CPU& cpu, PPU& ppu);
 
-    void debug_main(int argc, const char* argv[]);
-    void cpu_debug_main(int argc, const char* argv[]);
-    void ppu_debug_main(int argc, const char* argv[]);
+    void debug_main();
+    void cpu_debug_main();
+    void ppu_debug_main();
     std::vector<std::string> split_command(std::string cmd);
 
     private:

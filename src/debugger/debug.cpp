@@ -257,7 +257,7 @@ void Debugger::render_thread() {
     }
 }
 
-void Debugger::debug_main(int argc, const char* argv[]) {
+void Debugger::debug_main() {
 
     std::string cmd;
     std::vector<std::string> args;

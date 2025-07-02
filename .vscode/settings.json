@@ -13,8 +13,12 @@
     ],
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "C_Cpp.intelliSenseEngineFallback": "Disabled",
-    "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
-        "clang-diagnostic-error",
-        "clang-diagnostic-error"
-    ]
+    // "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+    //     "clang-diagnostic-error",
+    // ],
+    "C_Cpp.codeAnalysis.clangTidy.args": [
+      "--",
+      "-D_Float32=float",
+      "-std=c++17"
+    ],
 }

@@ -27,19 +27,17 @@ int main(int argc, const char* argv[]) {
     // std::ifstream fs_rom, fs_boot;
     byte* rom;
     byte* bootrom = nullptr;
-    bool bootrom_enable = false;
-    bool rom_enable = true;
     
     bool debug = false;
-    CLI::Option *flag_debug = gb.add_flag("-d,--debug", debug, "Enable debugger");
+    gb.add_flag("-d,--debug", debug, "Enable debugger");
 
     std::string rom_path;
-    CLI::Option *arg_rom_path = gb.add_option("-f,--rom,rom", rom_path, "ROM path")
+    gb.add_option("-f,--rom,rom", rom_path, "ROM path")
         ->required()
         ->check(CLI::ExistingFile);
 
     std::string bootrom_path;
-    CLI::Option *arg_bootrom_path = gb.add_option("-b,--bootrom", bootrom_path, "ROM path")
+    auto *arg_bootrom_path = gb.add_option("-b,--bootrom", bootrom_path, "ROM path")
         ->check(CLI::ExistingFile);
 
     gb.set_help_flag("");
@@ -98,7 +96,7 @@ int main(int argc, const char* argv[]) {
     Debugger dbg(cart, cpu, ppu);
 
     if (debug) {
-        dbg.debug_main(argc, argv);
+        dbg.debug_main();
     } else {
         // TODO: BoyGame class
     }
