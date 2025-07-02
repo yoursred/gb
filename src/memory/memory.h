@@ -215,60 +215,16 @@ class Memory {
     byte MBC5_read(word address);
 
     // void MBCnone(word address, byte value);
-    void MBC1(word address, byte value);
+    // void MBC1(word address, byte value);
     // void MBC2(word address, byte value); 
     // void MBC3(word address, byte value); 
     // void MBC5(word address, byte value); 
-
-    struct MemoryProxy {
-        // TODO: Explain
-        public:
-        Memory* parent;
-        word address;
-        byte* ptr;
-        byte mode;
-
-        word* ptr16;
-        byte hilo;
-
-        MemoryProxy(Memory* parent, word address);
-        MemoryProxy(byte* ptr);
-        MemoryProxy(word& ptr16, byte hilo);
-
-        byte read() const;
-        void write(byte value);
-
-        operator byte() const;
-        
-        MemoryProxy& operator ++(); // prefix
-        MemoryProxy& operator --(); // prefix
-        byte operator ++(int); // prefix
-        byte operator --(int); // prefix
-        
-
-        MemoryProxy& operator =(const byte& value);
-        MemoryProxy& operator =(const MemoryProxy& value);
-
-        ASSIGNMENT_DECLARE(+)
-        ASSIGNMENT_DECLARE(-)
-        ASSIGNMENT_DECLARE(&)
-        ASSIGNMENT_DECLARE(|)
-        ASSIGNMENT_DECLARE(^)
-
-        // void operator --(void) {
-        // I am not doing this, what is wrong with x = x - 1?
-        // Future me: I'm doing it, aren't I?
-        // }
-    };
-
-    // MemoryProxy operator[](const word value);
-    // MemoryProxy operator[](const word* value);
     // byte& operator[](const word value);
     // byte operator[](const word* value);
 
     // byte raw(word address);
 };
 
-typedef Memory::MemoryProxy MP;
+// typedef Memory::MemoryProxy MP;
 
 #endif
