@@ -1045,13 +1045,13 @@ void CPU::STOP() {
 }
 
 void CPU::DI() {
-    std::cout << "IRQ SERVICING OFF" << std::endl;
+    // std::cout << "IRQ SERVICING OFF" << std::endl;
     ime = false;
     ime_buffer = 0;
 }
 
 void CPU::EI() {
-    std::cout << "IRQ SERVICING QUEUED" << std::endl;
+    // std::cout << "IRQ SERVICING QUEUED" << std::endl;
     ime_buffer = EI_0;
 }
 

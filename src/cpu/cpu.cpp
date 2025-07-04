@@ -62,7 +62,7 @@ byte CPU::fetch() {
             break;
         case EI_1:
             // std::cout << "ENABLING INTERRUPTS\n";
-            std::cout << "IRQ SERVICING ON" << std::endl;
+            // std::cout << "IRQ SERVICING ON" << std::endl;
             ime = true;
             ime_buffer = 0;
             break;
@@ -244,25 +244,25 @@ void CPU::dma_transfer() {
     }
 }
 
-std::string CPU::log() {
-    std::stringstream out;
-    out <<  "A: " << COUT_HEX_BYTE(R_A);
-    out << " F: " << COUT_HEX_BYTE(R_F);
-    out << " B: " << COUT_HEX_BYTE(R_B);
-    out << " C: " << COUT_HEX_BYTE(R_C);
-    out << " D: " << COUT_HEX_BYTE(R_D);
-    out << " E: " << COUT_HEX_BYTE(R_E);
-    out << " H: " << COUT_HEX_BYTE(R_H);
-    out << " L: " << COUT_HEX_BYTE(R_L);
-    out << " SP: " << COUT_HEX_WORD(R.sp);
-    out << " PC: 00:" << COUT_HEX_WORD(R.pc);
-    // out << " PCMEM:";
-    out << " (";
-    out << COUT_HEX_BYTE(memory.read(R.pc)) << " " << COUT_HEX_BYTE(memory.read(R.pc + 1)) << " ";
-    out << COUT_HEX_BYTE(memory.read(R.pc + 2)) << " " << COUT_HEX_BYTE(memory.read(R.pc + 3)) << ")" << std::endl;
+// std::string CPU::log() {
+//     std::stringstream out;
+//     out <<  "A: " << COUT_HEX_BYTE(R_A);
+//     out << " F: " << COUT_HEX_BYTE(R_F);
+//     out << " B: " << COUT_HEX_BYTE(R_B);
+//     out << " C: " << COUT_HEX_BYTE(R_C);
+//     out << " D: " << COUT_HEX_BYTE(R_D);
+//     out << " E: " << COUT_HEX_BYTE(R_E);
+//     out << " H: " << COUT_HEX_BYTE(R_H);
+//     out << " L: " << COUT_HEX_BYTE(R_L);
+//     out << " SP: " << COUT_HEX_WORD(R.sp);
+//     out << " PC: 00:" << COUT_HEX_WORD(R.pc);
+//     // out << " PCMEM:";
+//     out << " (";
+//     out << COUT_HEX_BYTE(memory.read(R.pc)) << " " << COUT_HEX_BYTE(memory.read(R.pc + 1)) << " ";
+//     out << COUT_HEX_BYTE(memory.read(R.pc + 2)) << " " << COUT_HEX_BYTE(memory.read(R.pc + 3)) << ")" << std::endl;
 
-    return out.str();
-}
+//     return out.str();
+// }
 
 std::string CPU::log_dr() {
     std::stringstream out;

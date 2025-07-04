@@ -50,7 +50,7 @@ PPU::PPU(Memory& mem):
 
     x = 0;
 
-    buffer = new byte[160 * 144 * 4 * 2]{}; // 160 * 144 pixels * 4 channels/pixel * 2 buffers
+    buffer = new byte[160 * 144 * 4 * 2]{}; // 160 * 144 pixels * 4 channels/pixel * 2 buffers (note to self, RGBA)
     working_buffer = buffer;
     render_buffer = &buffer[160 * 144 * 4]; // Halfway through the main buffer
 

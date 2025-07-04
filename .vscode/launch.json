@@ -13,7 +13,8 @@
                 // "bootrom",
                 // "debug",
                 "-df",
-                "roms/tetris.gb",
+                "roms/game-boy-test-roms-v7.0/mooneye-test-suite/emulator-only/mbc1/multicart_rom_8Mb.gb",
+                // "-b",
                 // "dmg_boot.bin"
             ],
             "stopAtEntry": false,

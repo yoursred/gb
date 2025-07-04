@@ -6,6 +6,7 @@
 - [x] Raw `Memory` read and write functions for debugging
 - [x] Finish debugger (Add more commands)
 - [x] Control execution speed (can lock it at 60fps for now)
+- [ ] Get rid of cursed pointer cast shenanigans
 - [ ] Break up `Memory` class
 - [ ] Abandon cycle counting, revert back to monke and get accurate-ish timing
 - [ ] Create all encompassing `Gameboy` class to hold `CPU`, `PPU`, and `Memory` objects (Look at `Debugger` for inspiration)

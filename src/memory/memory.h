@@ -42,6 +42,7 @@ struct mem_read {
 #define MODE_RAM 16
 #define MODE_BATTERY 32
 #define MODE_TIMER 64
+#define MODE_MULTICART 128
 
 #define ASSIGNMENT_DECLARE(op) void operator op## =(byte const& value);
 
@@ -84,18 +85,46 @@ struct mem_read {
 #define IO_R_START        0xFF00
 #define HRAM_START        0xFF80
 
-#define BOOT_ROM_END    0x100
+#define BOOT_ROM_END     0x100
 #define ROM_BANK_00_END 0x4000
 #define ROM_BANK_NN_END 0x8000
 #define VRAM_END        0xA000
 #define VRAM_CART_END   0xC000
-#define ERAM_END        0xD000
+#define ERAM_END        0xC000
+#define WRAM_END        0xE000
 #define WRAM_BANK_0_END 0xE000
 #define ECHO_RAM_END    0xFE00
 #define OAM_T_END       0xFEA0
 #define ILLEGAL_END     0xFF00
 #define IO_R_END        0xFF80
 #define HRAM_END        0xFFFF
+
+#define ROM_BANK_SIZE   0x4000
+#define RAM_BANK_SIZE   0x2000
+
+#define JOYP_ADDRESS    0xFF00
+#define DIV_ADDRESS     0xFF04
+#define STAT_ADDRESS    0xFF41
+#define LY_ADDRESS      0xFF44
+#define LYC_ADDRESS     0xFF45
+#define DMA_ADDRESS     0xFF46
+#define BOOTROM_UNMAP   0xFF50
+
+#define MBC1_RAM_ENABLE  0x2000
+#define MBC1_ROM_BANK    0x4000
+#define MBC1_RAM_BANK    0x6000
+#define MBC1_MODE        0x8000
+
+#define MBC2_SELECT     0x2000
+
+#define MBC3_RAM_TIMER_ENABLE 0x2000
+#define MBC3_ROM_BANK   0x4000
+#define MBC3_RAM_TIMER_REGISTER   0x6000
+#define MBC3_RTC_LATCH    0x8000
+#define MBC3_RTC_START  0xA000
+#define MBC3_RTC_END    0xC000
+
+
 
 #define DPAD 2
 #define BTNS 1
@@ -148,7 +177,7 @@ class Memory {
     byte BOOTROM [BOOT_ROM_END]; // = {0};
     byte* BANKS; // [0x10000] = {0xFF}; // MBC5 supports up to 512 ROM banks
     byte VRAM   [0x2000]; // = {0xFF}; // more clown behaviour
-    byte ERAM   [0x2000]; // = {0xFF}; // MBC5 supports up to 16 RAM banks
+    byte* ERAM; // = {0xFF}; // MBC5 supports up to 16 RAM banks
     byte WRAM   [0x2000]; // = {0xFF};
     byte OAM_T   [0xA0]; // = {0xFF};
     byte IO_R     [0x80]; // = {0xFF};

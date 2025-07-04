@@ -105,6 +105,7 @@ class Debugger {
     void debug_thread();
     void event_thread();
     void render_thread();
+    void debug_render_thread();
 
     std::vector<std::string> commands = {
         "c",

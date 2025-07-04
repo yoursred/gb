@@ -113,6 +113,8 @@ class PPU {
     byte* working_buffer;
     byte* render_buffer;
     byte* buffer;
+
+    // debug buffers
     byte tileblock[384 * 8 * 8 * 4] = {255};
     byte tilemap[32 * 32 * 8 * 8 * 4 * 2];
     // byte tilemap1[32 * 32 * 8 * 8 * 4];

@@ -6,14 +6,14 @@
 #include <string>
 
 
-#define R_A MP(R.af, R_HI)
-#define R_F MP(R.af, R_LO)
-#define R_B MP(R.bc, R_HI)
-#define R_C MP(R.bc, R_LO)
-#define R_D MP(R.de, R_HI)
-#define R_E MP(R.de, R_LO)
-#define R_H MP(R.hl, R_HI)
-#define R_L MP(R.hl, R_LO)
+// #define R_A MP(R.af, R_HI)
+// #define R_F MP(R.af, R_LO)
+// #define R_B MP(R.bc, R_HI)
+// #define R_C MP(R.bc, R_LO)
+// #define R_D MP(R.de, R_HI)
+// #define R_E MP(R.de, R_LO)
+// #define R_H MP(R.hl, R_HI)
+// #define R_L MP(R.hl, R_LO)
 
 #define OP_ADD    1
 #define OP_SUB    2

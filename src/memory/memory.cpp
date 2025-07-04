@@ -91,6 +91,8 @@ Memory::Memory(byte ROM[], unsigned int size) {
         exit(-1);
     }
     rom_banks = 2 * (1 << ROM[0x148]);
+
+    std::cout << "ROM banks: " << rom_banks << std::endl;
     
     switch (ROM[0x149]) { // RAM size
         case (0): ram_banks =  0; break;
@@ -111,7 +113,19 @@ Memory::Memory(byte ROM[], unsigned int size) {
         exit(-1);
     }
 
+    if ((mode & MODE_MBC1) && (rom_banks > 16)) {
+        word checksum = 0;
+        for (auto i = (0x104 + 32 * ROM_BANK_SIZE); i < (0x134 + 32 * ROM_BANK_SIZE); i++) {
+            checksum += ROM[i];
+        }
+        if (checksum == 0x1546) {
+            std::cout << "Got multicart!" << std::endl;
+            mode |= MODE_MULTICART;
+        }
+    }
+
     BANKS = new byte[size];
+    ERAM = new byte[ram_banks * RAM_BANK_SIZE];
 
     // It's populatin' time!
     std::memcpy(BANKS, ROM, size);
@@ -145,60 +159,33 @@ byte Memory::read(word address) {
         last_read = address;
         last_read_flag = true;
     }
-
-    // if (dma && (address < 0xFF80)) {
-    //     return 0xFF;
-    // }
-
-    // if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
-    //     std::cout << "ILLEGAL WRITE" << std::endl;
-    // address &= 0xFFFF;
-    // return Memory::MBC1_read(address);
-    // if (address == 0xFF44) {
-    //     return 0x90; // More clown behavior
-    // }
-    /* TODO: WIP
-    switch (address & 0xE000) {
-        case (ROM_BANK_00_START):
-            if (address < BOOT_ROM_END && boot_rom) {
-                return BOOTROM[address];
-            }
-            return BOOTROM[address];
-        case (ROM_BANK_NN_START):
-            // TODO: This looks sketchy
-            return BANKS[address + (rom_bank - 1) * ROM_BANK_NN_START]; 
-        case (VRAM_START):
-            // TODO: CGB Banks
-            return VRAM[address & 0x1FFF];
-        case (ERAM_START):
-            if (ram_enable) {
-                // TODO: Implement properly
-                return ERAM[(address & 0x1FFF) + ram_bank * 0x2000];
-            }
-            return 0xFF;
-        case (WRAM_START):
-            // TODO: CGB Banks
-            return WRAM[address & 0x1FFF];
-        case (ECHO_RAM_START):
-            switch (address) {
-                case
-            }
-
-    }
-    */
-
-    if (address < BOOT_ROM_END && boot_rom) {
+    
+    if (boot_rom && address < BOOT_ROM_END) { // Short circuit sooner
         return BOOTROM[address];
     }
 
-    if (address < 0x4000) {
+    if (address < ROM_BANK_00_END) {
+        if ((mode & MODE_MULTICART) && mbc1_adv_banking) {
+            return BANKS[
+                (address + (rom_bank & 0b110000) * ROM_BANK_SIZE) &
+                (rom_banks * ROM_BANK_SIZE - 1)
+            ];
+        }else if ((mode & MODE_MBC1) && (rom_banks > 32) && mbc1_adv_banking) {
+            return BANKS[
+                (address + (rom_bank & 0b1100000) * ROM_BANK_SIZE) &
+                (rom_banks * ROM_BANK_SIZE - 1)
+            ];
+        }
         return BANKS[address];
     }
-    if (address < 0x8000) { // Banks 01-XX, 00-XX for MBC5
-        return BANKS[address + rom_bank * 0x4000 - 0x4000];
+    if (address < ROM_BANK_NN_END) { // Banks 01-XX, 00-XX for MBC5
+        return BANKS[
+            (address + rom_bank * ROM_BANK_SIZE - ROM_BANK_NN_START) & 
+            (rom_banks * ROM_BANK_SIZE - 1)
+        ];
     }
-    if (address < 0xA000) { // VRAM
-        return VRAM[address - 0x8000];
+    if (address < VRAM_END) { // VRAM
+        return VRAM[address - VRAM_START];
         // VRAM/OAM blocking is not recommended
         // if (((IO_R[0x41] & 3) == 3) && (IO_R[0x40] & 0x80)) {
         //     return 0xFF;
@@ -206,39 +193,39 @@ byte Memory::read(word address) {
         //     return VRAM[address - 0x8000];
         // }
     }
-    if (address < 0xC000) {
-        return ram_enable ? ERAM[address + ram_bank * 0x2000 - 0xA000] : 0xFF;
+    if (address < ERAM_END) {
+        if (ram_enable && ram_banks) {
+            if ((mode & MODE_MBC1) && !mbc1_adv_banking) {
+                return ERAM[address - ERAM_START];
+            } else {
+                return ERAM[address + ram_bank * RAM_BANK_SIZE - ERAM_START];
+            }
+        }
+        return 0xFF;
     }
-    if (address < 0xE000)
-        return WRAM[address - 0xC000];
-    if (address < 0xFE00)
-        return WRAM[address - 0xE000];
-    if (address < 0xFEA0) {
-        return OAM_T[address - 0xFE00];
-        // VRAM/OAM blocking is not recommended
+    if (address < WRAM_END)
+        return WRAM[address - WRAM_START]; // TODO: CGB
+    if (address < ECHO_RAM_END)
+        return WRAM[address - ECHO_RAM_START];
+    if (address < OAM_T_END)
+        return OAM_T[address - OAM_T_START]; // VRAM/OAM blocking is not recommended
+        
         // if ((IO_R[0x41] & 2)) {
         //     return 0xFF;
         // }
         // else {
         //     return OAM_T[address - 0xFE00];
         // }
-    }
-    // if (address < 0xFF00)
-    //     return 0xFF;
-    if (address == 0xFF00) { // Absolute fucking buffoon
-        // JOYP.update(sf::Keyboard::isKeyPressed);
-        // joyp_wait = true;
-        // while (joyp_wait);
+    if (address == JOYP_ADDRESS) {
         JOYP.update(btns);
         return *(byte*) &JOYP;
     }
-        // return 0xFF;
-    if (address == 0xFF04)
+    if (address == DIV_ADDRESS)
         return cpu->div_timer >> 6;
-    if (address < 0xFF80)
-        return IO_R[address - 0xFF00];
-    if (address < 0xFFFF)
-        return HRAM[address - 0xFF80];
+    if (address < IO_R_END)
+        return IO_R[address - IO_R_START];
+    if (address < HRAM_END)
+        return HRAM[address - HRAM_START];
     return IE;
 }
 
@@ -247,99 +234,118 @@ void Memory::write(word address, byte value) {
         last_wrote = address;
         last_wrote_flag = true;
     }
-    if (dma && (address < 0xFF80)) {
+    if (dma && (address < HRAM_START)) {
         
-    } else if (address < 0x8000) {
+    } else if (address < ROM_BANK_NN_END) {
         write_regs(address, value);
     }
-    else if (address < 0xA000) { // VRAM/OAM blocking is not recommended
-        VRAM[address - 0x8000] = value;
+    else if (address < VRAM_END) { // VRAM/OAM blocking is not recommended
+        VRAM[address - VRAM_START] = value;
     //     if (((IO_R[0x41] & 3) != 3) || !(IO_R[0x40] & 0x80))
     //         VRAM[address - 0x8000] = value;
     }
-    else if (address < 0xC000) {
-        if (ram_enable)
-            ERAM[address + ram_bank * 0x2000 - 0xA000] = value;
+    else if (address < ERAM_END) {
+        if (ram_enable && ram_banks) {
+            if ((mode & MODE_MBC1) && !mbc1_adv_banking) {
+                ERAM[address - ERAM_START] = value;
+            } else {
+                ERAM[address + ram_bank * RAM_BANK_SIZE - ERAM_START] = value;
+            }
+        }
     }
-    else if (address < 0xE000)
-        WRAM[address - 0xC000] = value;
-    else if (address < 0xFE00);
+    else if (address < WRAM_END)
+        WRAM[address - WRAM_START] = value;
+    else if (address < ECHO_RAM_END);
         // return; // clown behaviour
-    else if (address < 0xFEA0) { // VRAM/OAM blocking is not recommended
-        OAM_T[address - 0xFE00] = value;
-    //     if (!(IO_R[0x41] & 2))
+    else if (address < OAM_T_END) { // VRAM/OAM blocking is not recommended
+        OAM_T[address - OAM_T_START] = value;
     }
-    else if (address < 0xFF00) {
-        // IO_R[0] = (value & ~0xF) | (IO_R[0] & 0xF);
-        // IO_R[0] &= 0xF;
-        // IO_R[0] |= value;
-        // std::cout << COUT_HEX_BYTE_DS(value) << " : " << COUT_HEX_BYTE_DS(IO_R[0]) << std::endl;
-    } else if (address == 0xFF00) {
-        // IO_R[0] = (value & ~0xF) | (IO_R[0] & 0xF);
-        // JOYP.update(sf::Keyboard::isKeyPressed);
+    else if (address < ILLEGAL_END) {
+        // TODO: OAM corruption bug
+    } else if (address == JOYP_ADDRESS) {
         JOYP.mode = (value >> 4) & 0x3;
         btns.polled = ~JOYP.mode;
         btns.delivered = false;
-        // IO_R[0] &= 0xF;
-        // IO_R[0] |= value;
-        // std::cout << COUT_HEX_BYTE_DS(value) << " : " << COUT_HEX_BYTE_DS(IO_R[0]) << std::endl;
     }
-        // return; // clown behaviour
-    else if (address == 0xFF41)
-        IO_R[0x41] = (value & ~7) | IO_R[0x41];
-    else if (address == 0xFF44);
-    else if (address == 0xFF45) {
+    else if (address == STAT_ADDRESS)
+        IO_R[0x41] = (value & 0b1111'1000) | IO_R[0x41];
+    else if (address == LY_ADDRESS);
+    else if (address == LYC_ADDRESS) {
         IO_R[0x45] = value;
         if (value == IO_R[0x44]) {
             IO_R[0x41] |= 4;
         }
     }
-    else if (address == 0xFF46) {
+    else if (address == DMA_ADDRESS) {
         dma = true;
         IO_R[0x46] = value & 0xDF;
         // std::cout << "Requesting DMA transfer" << std::endl;
     }
-    else if (address == 0xFF50) 
-        boot_rom = !value;
-    else if (address < 0xFF80) // I'm not a clown, I'm the whole circus
-        IO_R[address - 0xFF00] = value;
-    else if (address < 0xFFFF)
-        HRAM[address - 0xFF80] = value;
+    else if (address == BOOTROM_UNMAP) 
+        boot_rom = false;
+    else if (address < IO_R_END) // I'm not a clown, I'm the whole circus
+        IO_R[address - IO_R_START] = value;
+    else if (address < HRAM_END)
+        HRAM[address - HRAM_START] = value;
     else
         IE = value;
     
-    // mem_writes.push_back(mem_write(cpu_steps, address, value));
 
     if (address == 0xFF02 && value == 0x81) { // Basic serial output
-        std::cout << (char) IO_R[1];
+        std::cerr << (char) IO_R[1];
         if (IO_R[1] == '\n')
             std::cout << "> ";
-        // fflush(stdout);
     }
-    if (address == 0xFF04) {
+    if (address == DIV_ADDRESS) {
         cpu->div_timer = 0;
     }
-    if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
-        std::cout << "ILLEGAL WRITE" << std::endl;
+
+    // if (address == BOOTROM_UNMAP && !value) {
+    //     std::cout << "Scheiße!" << std::endl;
+    // }
+    // if ((0x7fff < address) && (address < 0xa000) && ((IO_R[41] & 3) == 3))
+    //     std::cout << "ILLEGAL WRITE" << std::endl;
 }
 
 void Memory::write_regs(word address, byte value) {
     // TODO: Fix banking
     switch (mode & 0xF) {
         case (MODE_MBC1):
-            if (address < 0x2000) {
+            if (address < MBC1_RAM_ENABLE) {
                 ram_enable = ((value & 0xF) == 0xA);
-            } else if (address < 0x4000) {
-                value &= 0x1F;
-                if (!value) value = 1;
-                rom_bank &= 0xFFC0; // This zeroes out the bottom 5 bits
+            } else if (address < MBC1_ROM_BANK) {
+                if (mode & MODE_MULTICART) {
+                    if (!(value & 0x1F)) value |= 1;
+                    value &= 0xF;
+                    rom_bank &= ~0xF;
+                } else {
+                    value &= 0x1F;
+                    if (!(value & 0x1F)) value |= 1;
+                    value &= (rom_banks - 1);
+                    rom_bank &= ~(rom_banks - 1);
+                }
+
                 rom_bank |= value; // This updates them with only the supported bits
                 // rom_bank %= rom_banks;
-            } else if (address < 0x6000) {
-                rom_bank &= 0xFF9F;
-                rom_bank |= (value & 2) << 5;
-            } else {
-                mbc1_adv_banking = value;
+            } else if (address < MBC1_RAM_BANK) {
+                value &= 0b11;
+                
+                if (mode & MODE_MULTICART) {
+                    rom_bank &= ~(0b110000);
+                    rom_bank |= (value << 4);
+                } else {
+                    ram_bank = value & (ram_banks - 1);
+                    if (rom_banks == 64) {
+                        value &= 1;
+                    } else if (rom_banks < 128) {
+                        value = 0;
+                    }
+
+                    rom_bank &= ~(0b1100000);
+                    rom_bank |= (value << 5);
+                }
+            } else if (address < MBC1_MODE) {
+                mbc1_adv_banking = value & 1;
             }
             break;
         case (MODE_MBC2):

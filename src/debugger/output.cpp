@@ -1,18 +1,15 @@
 #include "include.h"
 #include "debugger/debug.h"
 #include "cpu/insset.h"
-// #include "memory/memory.h"
-// #include "cpu/cpu.h"
-// #include "ppu/ppu.h"
+#include "memory/memory.h"
+#include "cpu/cpu.h"
+#include "ppu/ppu.h"
 #include <iostream>
 #include <iomanip>
 #include <regex>
+// #include <fmt/format.h>
 
 extern const char* instructions[];
-const std::regex r_u16("d16|a16");
-const std::regex r_u8 ("d8|a8");
-// const std::regex r_FFu8 ("a8"); // no
-const std::regex r_s8 ("e8");
 
 
 
@@ -20,9 +17,12 @@ std::string print_instruction(const CPU& cpu) {
     byte l = get_length(cpu.opcode);
     // const byte& x = cpu.working_byte;
 
+    //TODO: Make this print the *next* instruction
+
     std::string out;
     std::stringstream ss;
     std::stringstream r;
+
 
     if (cpu.prefixed_fetch) { // 0xCB instructions do not need any replacement
         return instructions[0x100 + cpu.opcode];
@@ -31,21 +31,29 @@ std::string print_instruction(const CPU& cpu) {
         out = instructions[cpu.opcode];
         if (l == 3) {
             r << COUT_HEX_WORD_DS(cpu.R.wz);
-            ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
+            // ss << fmt::format(out, r.str()) << std::endl;
             return ss.str();
         } 
         if (l == 2) {
-            if (std::regex_match(out, r_u8)) {
-                r << COUT_HEX_BYTE_DS(cpu.R.z);
-                ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
-                return ss.str();
+            switch (cpu.opcode) {
+                case 0x18:
+                case 0x20:
+                case 0x28:
+                case 0x30:
+                case 0x38:
+                    r << COUT_HEX_WORD_DS(cpu.R.pc + ((sbyte)cpu.R.z) - 1);
+                    break;
+                case 0xE8:
+                case 0xF8:
+                    r << (cpu.R.z > 127 ? "-$" : "+$");
+                    r << COUT_HEX_BYTE(cpu.R.z);
+                    break;
+                default:
+                    r << COUT_HEX_BYTE_DS(cpu.R.z);
             }
-            else if (std::regex_match(out, r_s8)) {
-                r << (cpu.R.z == 0 ? "$" : (cpu.R.z > 127 ? "$-" : "$+"));
-                r << COUT_HEX_BYTE(cpu.R.z);
-                ss << std::regex_replace(out, r_u16, r.str()) << std::endl;
-                return ss.str();
-            }
+            // ss << fmt::format(out, r.str()) << std::endl;
+            
+            return ss.str();
         }
         return out;
     }
@@ -91,14 +99,14 @@ void dumphex(Memory& data, word start, word len, std::ostream& output) {
 }
 
 const char* instructions[] = {
-    "NOP", "LD BC, d16", "LD [BC], A", "INC BC", "INC B", "DEC B", "LD B, d8", "RLCA", 
-    "LD [a16], SP", "ADD HL, BC", "LD A, [BC]", "DEC BC", "INC C", "DEC C", "LD C, d8", "RRCA", 
-    "STOP 0", "LD DE, d16", "LD [DE], A", "INC DE", "INC D", "DEC D", "LD D, d8", "RLA", 
-    "JR e8", "ADD HL, DE", "LD A, [DE]", "DEC DE", "INC E", "DEC E", "LD E, d8", "RRA", 
-    "JR NZ, e8", "LD HL, d16", "LD [HL+], A", "INC HL", "INC H", "DEC H", "LD H, d8", "DAA", 
-    "JR Z, e8", "ADD HL, HL", "LD A, [HL+]", "DEC HL", "INC L", "DEC L", "LD L, d8", "CPL", 
-    "JR NC, e8", "LD SP, d16", "LD [HL-], A", "INC SP", "INC [HL]", "DEC [HL]", "LD [HL], d8", "SCF", 
-    "JR C, e8", "ADD HL, SP", "LD A, [HL-]", "DEC SP", "INC A", "DEC A", "LD A, d8", "CCF", 
+    "NOP", "LD BC, {}", "LD [BC], A", "INC BC", "INC B", "DEC B", "LD B, {}", "RLCA", 
+    "LD [{}], SP", "ADD HL, BC", "LD A, [BC]", "DEC BC", "INC C", "DEC C", "LD C, {}", "RRCA", 
+    "STOP 0", "LD DE, {}", "LD [DE], A", "INC DE", "INC D", "DEC D", "LD D, {}", "RLA", 
+    "JR {}", "ADD HL, DE", "LD A, [DE]", "DEC DE", "INC E", "DEC E", "LD E, {}", "RRA", 
+    "JR NZ, {}", "LD HL, {}", "LD [HL+], A", "INC HL", "INC H", "DEC H", "LD H, {}", "DAA", 
+    "JR Z, {}", "ADD HL, HL", "LD A, [HL+]", "DEC HL", "INC L", "DEC L", "LD L, {}", "CPL", 
+    "JR NC, {}", "LD SP, {}", "LD [HL-], A", "INC SP", "INC [HL]", "DEC [HL]", "LD [HL], {}", "SCF", 
+    "JR C, {}", "ADD HL, SP", "LD A, [HL-]", "DEC SP", "INC A", "DEC A", "LD A, {}", "CCF", 
     "LD B, B", "LD B, C", "LD B, D", "LD B, E", "LD B, H", "LD B, L", "LD B, [HL]", "LD B, A", 
     "LD C, B", "LD C, C", "LD C, D", "LD C, E", "LD C, H", "LD C, L", "LD C, [HL]", "LD C, A", 
     "LD D, B", "LD D, C", "LD D, D", "LD D, E", "LD D, H", "LD D, L", "LD D, [HL]", "LD D, A", 
@@ -115,14 +123,14 @@ const char* instructions[] = {
     "XOR B", "XOR C", "XOR D", "XOR E", "XOR H", "XOR L", "XOR [HL]", "XOR A", 
     "OR B", "OR C", "OR D", "OR E", "OR H", "OR L", "OR [HL]", "OR A", 
     "CP B", "CP C", "CP D", "CP E", "CP H", "CP L", "CP [HL]", "CP A", 
-    "RET NZ", "POP BC", "JP NZ, a16", "JP a16", "CALL NZ, a16", "PUSH BC", "ADD A, d8", "RST 00H", 
-    "RET Z", "RET", "JP Z, a16", "PREFIX CB", "CALL Z, a16", "CALL a16", "ADC A, d8", "RST 08H", 
-    "RET NC", "POP DE", "JP NC, a16", "NUL", "CALL NC, a16", "PUSH DE", "SUB d8", "RST 10H", 
-    "RET C", "RETI", "JP C, a16", "NUL", "CALL C, a16", "NUL", "SBC A, d8", "RST 18H", 
-    "LDH [$FF00 + a8], A", "POP HL", "LD [C], A", "NUL", "NUL", "PUSH HL", "AND d8", "RST 20H", 
-    "ADD SP, e8", "JP [HL]", "LD [a16], A", "NUL", "NUL", "NUL", "XOR d8", "RST 28H", 
-    "LDH A, [$FF00 + a8]", "POP AF", "LD A, [C]", "DI", "NUL", "PUSH AF", "OR d8", "RST 30H", 
-    "LD HL, SP+e8", "LD SP, HL", "LD A, [a16]", "EI", "NUL", "NUL", "CP d8", "RST 38H", 
+    "RET NZ", "POP BC", "JP NZ, {}", "JP {}", "CALL NZ, {}", "PUSH BC", "ADD A, {}", "RST 00H", 
+    "RET Z", "RET", "JP Z, {}", "PREFIX CB", "CALL Z, {}", "CALL {}", "ADC A, {}", "RST 08H", 
+    "RET NC", "POP DE", "JP NC, {}", "NUL", "CALL NC, {}", "PUSH DE", "SUB {}", "RST 10H", 
+    "RET C", "RETI", "JP C, {}", "NUL", "CALL C, {}", "NUL", "SBC A, {}", "RST 18H", 
+    "LDH [$FF00 + a8], A", "POP HL", "LD [C], A", "NUL", "NUL", "PUSH HL", "AND {}", "RST 20H", 
+    "ADD SP, {}", "JP [HL]", "LD [{}], A", "NUL", "NUL", "NUL", "XOR {}", "RST 28H", 
+    "LDH A, [$FF00 + a8]", "POP AF", "LD A, [C]", "DI", "NUL", "PUSH AF", "OR {}", "RST 30H", 
+    "LD HL, SP{}", "LD SP, HL", "LD A, [{}]", "EI", "NUL", "NUL", "CP {}", "RST 38H", 
     "RLC B", "RLC C", "RLC D", "RLC E", "RLC H", "RLC L", "RLC [HL]", "RLC A", 
     "RRC B", "RRC C", "RRC D", "RRC E", "RRC H", "RRC L", "RRC [HL]", "RRC A", 
     "RL B", "RL C", "RL D", "RL E", "RL H", "RL L", "RL [HL]", "RL A", 

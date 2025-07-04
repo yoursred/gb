@@ -75,6 +75,53 @@ void Debugger::event_thread() {
 
 void Debugger::render_thread() {
     sf::Transform scale;
+    float window_scale = 4;
+    const sf::Vector2u normal_size(160, 144);
+    
+    sf::Font font("meslolgs.ttf");
+    scale.scale(sf::Vector2f(4, 4));
+    // scale_super_debug.scale(sf::Vector2f(2, 2));
+    if (!window.setActive(true)) {
+
+    }
+    while (window.isOpen()) {
+        if (state == DBG_END) {
+            window.close();
+        }
+        while (const auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+                state = DBG_END;
+            }
+            
+            // Note to self: the video mode controls the window's "canvas", not its size on the screen
+            if (event->is<sf::Event::KeyReleased>() && 
+                event->getIf<sf::Event::KeyReleased>()->code >= sf::Keyboard::Key::Num1 &&
+                event->getIf<sf::Event::KeyReleased>()->code <= sf::Keyboard::Key::Num4) 
+            {
+                window_scale = (int)(event->getIf<sf::Event::KeyReleased>()->code) - (int)sf::Keyboard::Key::Num0;
+                window.setSize(normal_size * ((unsigned int) window_scale));
+            }
+            
+        // TODO: Add screenshots
+        }
+
+        window.clear();
+
+        if (mem.btns.polled && !mem.btns.delivered) {
+            mem.btns.update(sf::Keyboard::isKeyPressed);
+        }
+
+        texture.update(ppu.render_buffer);
+        sf::Sprite sprite(texture);
+
+        window.draw(sprite, scale);
+        window.display();
+    }
+}
+
+void Debugger::debug_render_thread() {
+    sf::Transform scale;
     sf::Transform scale_super_debug;
     float window_scale = 4;
     const sf::Vector2u super_debug_size(512, 512);
@@ -270,6 +317,8 @@ void Debugger::debug_main() {
     output << "Size of struct dmg_plt: " << sizeof(dmg_plt) << std::endl;
     output << "Size of struct lcdc: " << sizeof(lcdc) << std::endl;
     output << "Size of struct lcd_stat: " << sizeof(lcd_stat) << std::endl;
+    output << "Size of struct rom_header: " << sizeof(rom_header) << std::endl;
+
 
 
     window.create(
