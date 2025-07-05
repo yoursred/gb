@@ -85,6 +85,8 @@ class Debugger {
     word x, y;
     int i;
 
+    bool mooneye_debug = false;
+
     Memory& mem;
     CPU& cpu;
     PPU& ppu;

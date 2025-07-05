@@ -115,7 +115,7 @@ struct mem_read {
 #define MBC1_RAM_BANK    0x6000
 #define MBC1_MODE        0x8000
 
-#define MBC2_SELECT     0x2000
+#define MBC2_SELECT      0x4000
 
 #define MBC3_RAM_TIMER_ENABLE 0x2000
 #define MBC3_ROM_BANK   0x4000

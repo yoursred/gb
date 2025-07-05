@@ -104,6 +104,11 @@ Memory::Memory(byte ROM[], unsigned int size) {
             std::cerr << "RAM bank count error" << std::endl;
             exit(-1);
     }
+
+    if (mode & MODE_MBC2) {
+        ram_banks = 1;
+    }
+
     if (!(mode & MODE_MBC5)) {
         rom_bank = 1;
     }
@@ -170,7 +175,7 @@ byte Memory::read(word address) {
                 (address + (rom_bank & 0b110000) * ROM_BANK_SIZE) &
                 (rom_banks * ROM_BANK_SIZE - 1)
             ];
-        }else if ((mode & MODE_MBC1) && (rom_banks > 32) && mbc1_adv_banking) {
+        } else if ((mode & MODE_MBC1) && (rom_banks > 32) && mbc1_adv_banking) {
             return BANKS[
                 (address + (rom_bank & 0b1100000) * ROM_BANK_SIZE) &
                 (rom_banks * ROM_BANK_SIZE - 1)
@@ -197,6 +202,11 @@ byte Memory::read(word address) {
         if (ram_enable && ram_banks) {
             if ((mode & MODE_MBC1) && !mbc1_adv_banking) {
                 return ERAM[address - ERAM_START];
+            } else if (mode & MODE_MBC2) {
+                // MBC2 only has 512 half-bytes of ram
+                // Apparently the upper nybble returned should be 0xF
+                // https://github.com/LIJI32/SameBoy/blob/aff7f1706c380861eecadae2a3e9d54ebb66db27/Core/memory.c#L456
+                return ERAM[(address - ERAM_START) & 0x1FF] | 0xF0;
             } else {
                 return ERAM[address + ram_bank * RAM_BANK_SIZE - ERAM_START];
             }
@@ -248,6 +258,9 @@ void Memory::write(word address, byte value) {
         if (ram_enable && ram_banks) {
             if ((mode & MODE_MBC1) && !mbc1_adv_banking) {
                 ERAM[address - ERAM_START] = value;
+            } else if (mode & MODE_MBC2) {
+                // MBC2 only has 512 half-bytes of ram
+                ERAM[(address - ERAM_START) & 0x1FF] = value & 0xF;
             } else {
                 ERAM[address + ram_bank * RAM_BANK_SIZE - ERAM_START] = value;
             }
@@ -349,9 +362,12 @@ void Memory::write_regs(word address, byte value) {
             }
             break;
         case (MODE_MBC2):
-            if (address < 0x4000) {
+            if (address < MBC2_SELECT) {
+                value &= 0xF;
                 if (address & 0x100) { // Bit 8 is set, lower 4 bits are rom_bank
-                    rom_bank = value & 0xF;
+                    rom_bank = value;
+                    if (!value) rom_bank = 1;
+                    rom_bank &= (rom_banks - 1);
                 }
                 else {
                     ram_enable = (value == 0xA);
@@ -446,12 +462,3 @@ void Memory::raw_write(word address, byte value) {
     else
         IE = value;
 }
-
-// byte& Memory::operator[](const word value) {
-//     // return read(value);
-//     // return Memory::MemoryProxy(this, value);
-// }
-
-// byte Memory::operator[](const word* value) {
-//     // return Memory::MemoryProxy(this, *value);
-// }

@@ -31,6 +31,9 @@ int main(int argc, const char* argv[]) {
     bool debug = false;
     gb.add_flag("-d,--debug", debug, "Enable debugger");
 
+    bool mooneye_debug = false;
+    gb.add_flag("-m,--mooneye-debug", mooneye_debug, "Use when running mooneye tests");
+
     std::string rom_path;
     gb.add_option("-f,--rom,rom", rom_path, "ROM path")
         ->required()
@@ -94,6 +97,7 @@ int main(int argc, const char* argv[]) {
     cart.cpu = &cpu;
     PPU ppu(cart);
     Debugger dbg(cart, cpu, ppu);
+    dbg.mooneye_debug = mooneye_debug;
 
     if (debug) {
         dbg.debug_main();

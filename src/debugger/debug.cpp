@@ -42,13 +42,38 @@ void Debugger::debug_thread() {
             if (state == DBG_RUNNING) {
                 if (ppu.LY == 0 && ppu.x == 0) {
                     t0 = std::chrono::high_resolution_clock::now();
-                // if (lines < 47932) {
-                //     if (cpu.tcycles == 0)
-                //         doctor_log << cpu.log();
-                //     lines++;
+                
+                    // if (lines < 47932) {
+                        //     if (cpu.tcycles == 0)
+                        //         doctor_log << cpu.log();
+                        //     lines++;
                 }
-                // if (ppu.LY == 0 && ppu.ticks == 0)
-                //     t0 = std::chrono::high_resolution_clock::now();
+                    // if (ppu.LY == 0 && ppu.ticks == 0)
+                    //     t0 = std::chrono::high_resolution_clock::now();
+                if (mooneye_debug && (cpu.opcode == 0x40)) {
+                    if (
+                        cpu.R.bc == 0x0305 &&
+                        cpu.R.de == 0x080D &&
+                        cpu.R.hl == 0x1522
+                    ) {
+                        std::cout << "Test passed!" << std::endl;
+                        state = DBG_END;
+                        // exit(0);
+                    } else if (
+                        cpu.R.bc == 0x4242 &&
+                        cpu.R.de == 0x4242 &&
+                        cpu.R.hl == 0x4242
+                    ) {
+                        std::cout << "Test failed!" << std::endl;
+                        state = DBG_END;
+                        // exit(-1);
+                    } else {
+                        cmd_registers();
+                        std::cout << "Test failed! Unknown status!" << std::endl;
+                        state = DBG_END;
+                        // exit(-2);
+                    }
+                }
                 cpu.tick();
                 ppu.tick();
                 // if (cpu.log_lines == 0)
@@ -74,6 +99,9 @@ void Debugger::event_thread() {
 
 
 void Debugger::render_thread() {
+    if (mooneye_debug) {
+        return;
+    }
     sf::Transform scale;
     float window_scale = 4;
     const sf::Vector2u normal_size(160, 144);
@@ -319,28 +347,37 @@ void Debugger::debug_main() {
     output << "Size of struct lcd_stat: " << sizeof(lcd_stat) << std::endl;
     output << "Size of struct rom_header: " << sizeof(rom_header) << std::endl;
 
-
-
-    window.create(
-        sf::VideoMode(sf::Vector2u(160, 144) * 4u), 
-        "boygame debooger - version " VERSION, 
-        sf::Style::Titlebar | sf::Style::Close
-    );
-    bool resized = texture.resize(sf::Vector2u(160, 144));
-    if (!resized) {
-        // window.setSize(sf::Vector2u(160, 144));
+    bool handoff = true;
+    if (!mooneye_debug) {
+        window.create(
+            sf::VideoMode(sf::Vector2u(160, 144) * 4u), 
+            "boygame debooger - version " VERSION, 
+            sf::Style::Titlebar | sf::Style::Close
+        );
+        bool resized = texture.resize(sf::Vector2u(160, 144));
+        if (!resized) {
+            // window.setSize(sf::Vector2u(160, 144));
+        }
+        for (size_t i = 0; i < (32 * 4 * 3 * 8 * 8 * 4); i++) {
+            ppu.tileblock[i] = 255;
+        }
+        window.setKeyRepeatEnabled(false);
+        window.setFramerateLimit(60);
+        window.setPosition({80, 80});
+        handoff = window.setActive(false);
     }
-    for (size_t i = 0; i < (32 * 4 * 3 * 8 * 8 * 4); i++) {
-        ppu.tileblock[i] = 255;
-    }
-    window.setKeyRepeatEnabled(false);
-    window.setFramerateLimit(60);
-    window.setPosition({80, 80});
-    bool handoff = window.setActive(false);
 
     if (handoff) {
         std::thread render(&Debugger::render_thread, this);
         std::thread main_thread(&Debugger::debug_thread, this);
+
+        if (mooneye_debug) {
+            std::cout << "Mooneye mode" << std::endl;
+            while (state != DBG_END);
+            main_thread.join();
+            render.join();
+            return;
+        }
 
         while (state != DBG_END) {
             output << "> ";
