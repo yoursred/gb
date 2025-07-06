@@ -124,7 +124,10 @@ struct mem_read {
 #define MBC3_RTC_START  0xA000
 #define MBC3_RTC_END    0xC000
 
-
+#define MBC5_RAM_ENABLE      0x2000
+#define MBC5_ROM_BANK_LOW    0x3000
+#define MBC5_ROM_BANK_HIGH   0x4000
+#define MBC5_RAM_BANK        0x6000
 
 #define DPAD 2
 #define BTNS 1
@@ -194,7 +197,7 @@ class Memory {
 
     byte RTC_S, RTC_M, RTC_H, RTC_DL, RTC_DH;
 
-    word rom_bank = 0;
+    word rom_bank = 1;
     byte ram_bank = 0;
     bool ram_enable = false;
     bool mbc1_adv_banking = false;

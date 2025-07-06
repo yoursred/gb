@@ -12,8 +12,8 @@
             "args": [
                 // "bootrom",
                 // "debug",
-                "-df",
-                "roms/game-boy-test-roms-v7.0/mooneye-test-suite/emulator-only/mbc1/ram_256kb.gb",
+                "-dmf",
+                "roms/game-boy-test-roms-v7.0/mooneye-test-suite/emulator-only/mbc5/rom_64Mb.gb",
                 // "-b",
                 // "dmg_boot.bin"
             ],

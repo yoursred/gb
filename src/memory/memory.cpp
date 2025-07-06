@@ -109,9 +109,7 @@ Memory::Memory(byte ROM[], unsigned int size) {
         ram_banks = 1;
     }
 
-    if (!(mode & MODE_MBC5)) {
-        rom_bank = 1;
-    }
+    rom_bank = 1;
 
     if (size > (0x4000 * rom_banks)) {
         std::cerr << "ROM size error" << std::endl;
@@ -392,19 +390,20 @@ void Memory::write_regs(word address, byte value) {
             
             break;
         case (MODE_MBC5):
-            if (address < 0x2000) {
-                ram_enable = ((value & 0xF) == 0xA);
-            } else if (address < 0x3000) {
-                rom_bank &= 0xFF00;
+            if (address < MBC5_RAM_ENABLE) {
+                ram_enable = (value == 0xA);
+            } else if (address < MBC5_ROM_BANK_LOW) {
+                value &= (rom_banks - 1);
+                rom_bank &= ~((rom_banks - 1) & 0xFF);
                 rom_bank |= value;
-                // rom_bank %= rom_banks;
-            } else if (address < 0x4000) {
-                rom_bank &= ~0xFEFF;
-                rom_bank |= ((!!value) << 8);
-                // rom_bank %= rom_banks;
-            } else if (address < 0x6000) {
+            } else if (address < MBC5_ROM_BANK_HIGH) {
+                if (rom_banks > 256) {
+                    rom_bank &= 0xFEFF;
+                    rom_bank |= ((value & 1) << 8);
+                }
+            } else if (address < MBC5_RAM_BANK) {
+                value &= (ram_banks - 1);
                 ram_bank = value & 0xF;
-                // ram_bank %= ram_banks;
             }
             break;
     }
