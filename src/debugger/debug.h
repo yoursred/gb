@@ -108,6 +108,10 @@ class Debugger {
     void event_thread();
     void render_thread();
     void debug_render_thread();
+    void cocoa_thread();
+    void cli_thread();
+
+    void draw_debug();
 
     std::vector<std::string> commands = {
         "c",

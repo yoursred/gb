@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <chrono>
+#include <cstdio>
 
 #include <SFML/Graphics.hpp>
 
@@ -110,35 +111,40 @@ void Debugger::render_thread() {
     scale.scale(sf::Vector2f(4, 4));
     // scale_super_debug.scale(sf::Vector2f(2, 2));
     if (!window.setActive(true)) {
-
+        output << "Couldn't juggle window handle!" << std::endl;
     }
-    while (window.isOpen()) {
-        if (state == DBG_END) {
-            window.close();
-        }
-        while (const auto event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-                state = DBG_END;
-            }
+
+    // while (window.isOpen()) {
+    //     if (state == DBG_END) {
+    //         window.close();
+    //     }
+    //     while (const auto event = window.pollEvent()) {
+    //         if (event->is<sf::Event::Closed>()) {
+    //             window.close();
+    //             state = DBG_END;
+    //         }
             
-            // Note to self: the video mode controls the window's "canvas", not its size on the screen
-            if (event->is<sf::Event::KeyReleased>() && 
-                event->getIf<sf::Event::KeyReleased>()->code >= sf::Keyboard::Key::Num1 &&
-                event->getIf<sf::Event::KeyReleased>()->code <= sf::Keyboard::Key::Num4) 
-            {
-                window_scale = (int)(event->getIf<sf::Event::KeyReleased>()->code) - (int)sf::Keyboard::Key::Num0;
-                window.setSize(normal_size * ((unsigned int) window_scale));
-            }
+    //         // Note to self: the video mode controls the window's "canvas", not its size on the screen
+    //         if (event->is<sf::Event::KeyReleased>() && 
+    //             event->getIf<sf::Event::KeyReleased>()->code >= sf::Keyboard::Key::Num1 &&
+    //             event->getIf<sf::Event::KeyReleased>()->code <= sf::Keyboard::Key::Num4) 
+    //         {
+    //             window_scale = (int)(event->getIf<sf::Event::KeyReleased>()->code) - (int)sf::Keyboard::Key::Num0;
+    //             window.setSize(normal_size * ((unsigned int) window_scale));
+    //         }
             
-        // TODO: Add screenshots
-        }
+    //     // TODO: Add screenshots
+    //     }
+
+    //     if (mem.btns.polled && !mem.btns.delivered) {
+    //         mem.btns.update(sf::Keyboard::isKeyPressed);
+    //     }
+    // }
+
+    while (true) {
 
         window.clear();
 
-        if (mem.btns.polled && !mem.btns.delivered) {
-            mem.btns.update(sf::Keyboard::isKeyPressed);
-        }
 
         texture.update(ppu.render_buffer);
         sf::Sprite sprite(texture);
@@ -364,46 +370,99 @@ void Debugger::debug_main() {
         window.setKeyRepeatEnabled(false);
         window.setFramerateLimit(60);
         window.setPosition({80, 80});
-        handoff = window.setActive(false);
+        window.clear();
+
+        // handoff = window.setActive(false);
     }
 
-    if (handoff) {
-        std::thread render(&Debugger::render_thread, this);
-        std::thread main_thread(&Debugger::debug_thread, this);
+    // if (handoff) {
+    // std::thread render(&Debugger::render_thread, this);
+    std::thread main_thread(&Debugger::debug_thread, this);
+    std::thread cli_t(&Debugger::cli_thread, this);
 
-        if (mooneye_debug) {
-            std::cout << "Mooneye mode" << std::endl;
-            while (state != DBG_END);
+    if (mooneye_debug) {
+        std::cout << "Mooneye mode" << std::endl;
+        while (state != DBG_END);
+
+        std::fclose(stdin);
+        // std::cin.
+            // std::cin <<
+
             main_thread.join();
-            render.join();
-            return;
+        cli_t.join();
+        // render.join();
+        return;
+    }
+
+    sf::Transform scale;
+    float window_scale = 4;
+    const sf::Vector2u normal_size(160, 144);
+
+    sf::Font font("meslolgs.ttf");
+    scale.scale(sf::Vector2f(4, 4));
+    // scale_super_debug.scale(sf::Vector2f(2, 2));
+
+    while (state != DBG_END) {
+        if (mem.btns.polled && !mem.btns.delivered) {
+            mem.btns.update(sf::Keyboard::isKeyPressed);
         }
+        window.clear();
+        window.pollEvent();
 
-        while (state != DBG_END) {
-            output << "> ";
-            std::getline(std::cin, cmd);
-            if (cmd.size()) {
-                args = split_command(cmd);
-                cmd = args.front();
-                args.erase(args.begin());
+        texture.update(ppu.render_buffer);
+        sf::Sprite sprite(texture);
 
-                if (!str(cmd, commands)) {
-                    output << "Command `" << cmd << "` not found." << std::endl;
-                } else if(simple_commands_ptr.count(cmd) && args.empty()) {
-                    // TODO: eliminate this evil and use `std::function` instead
-                    (this->*(simple_commands_ptr.at(cmd)))(); // black magic
-                } else if (commands_ptr.count(cmd)) {
-                    (this->*(commands_ptr.at(cmd)))(args); // black magic
-                } else {
-                    output << "Too many arguments for command `" << cmd << "`." << std::endl;
-                }
+        window.draw(sprite, scale);
+        window.display();
+    }
+
+    main_thread.join();
+    cli_t.join();
+    // render.join();
+    // } else {
+    //     std::cerr << "Could not handoff window to render thread, aborting..." << std::endl;
+    //     std::exit(-1);
+    // }
+}
+
+void Debugger::cocoa_thread() {
+
+}
+
+void Debugger::cli_thread() {
+    std::vector<std::string> args;
+
+    while (state != DBG_END && std::getline(std::cin, cmd)) {
+        output << "> ";
+        
+        if (cmd.size())
+        {
+            args = split_command(cmd);
+            cmd = args.front();
+            args.erase(args.begin());
+
+            if (!str(cmd, commands))
+            {
+                output << "Command `" << cmd << "` not found." << std::endl;
+            }
+            else if (simple_commands_ptr.count(cmd) && args.empty())
+            {
+                // TODO: eliminate this evil and use `std::function` instead
+                (this->*(simple_commands_ptr.at(cmd)))(); // black magic
+            }
+            else if (commands_ptr.count(cmd))
+            {
+                (this->*(commands_ptr.at(cmd)))(args); // black magic
+            }
+            else
+            {
+                output << "Too many arguments for command `" << cmd << "`." << std::endl;
             }
         }
-        
-        main_thread.join();
-        render.join();
-    } else {
-        std::cerr << "Could not handoff window to render thread, aborting..." << std::endl;
-        std::exit(-1);
     }
+}
+
+void Debugger::draw_debug() {
+    // TODO: move the debug stuff here so it can just be called right after
+    // drawing the screen 
 }

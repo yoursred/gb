@@ -11,8 +11,8 @@ Breakpoint::Breakpoint(std::string rs, word value16, byte value8 = 0) {
     RWATCH_STR_IF(e) RWATCH_STR_IF(h) RWATCH_STR_IF(l)
     RWATCH_STR_IF(wread)  RWATCH_STR_IF(wwrite) RWATCH_STR_IF(wmem)
     if (watch >> 8) {
-        address16 = value16;
-        value8 = value8;
+        Breakpoint::address16 = value16;
+        Breakpoint::value8 = value8;
     } else
     if (watch >> 4) {
         Breakpoint::value16 = value16;
